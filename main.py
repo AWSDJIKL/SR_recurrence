@@ -1,16 +1,35 @@
-# This is a sample Python script.
+# -*- coding: utf-8 -*-
+'''
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+'''
+# @Time    : 2021/12/19 23:14
+# @Author  : LINYANZHEN
+# @File    : main.py
+import random
+
+import numpy as np
+import torch
+from model import RCAN, GradualSR
+import Trainer
+import data
+from option import args
+import loss
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+def setup_seed(seed):
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    np.random.seed(seed)
+    random.seed(seed)
+    torch.backends.cudnn.deterministic = True
 
 
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    setup_seed(args.seed)
+    # model = RCAN.RCAN(args)
+    model = GradualSR.GradualSR(args)
+    loader = data.Data(args)
+    loss = loss.Loss(args)
+    trainer = Trainer.Trainer(args, model, loader, loss)
+    while not trainer.is_finsh():
+        trainer.train_and_test()

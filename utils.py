@@ -5,16 +5,89 @@
 # @Time    : 2021/12/3 11:59
 # @Author  : LINYANZHEN
 # @File    : utils.py
+import shutil
+
 import torch
+import torchvision
 from PIL import Image
 import os
+import math
+import time
+import datetime
 import torch.nn.functional as F
 from torch.autograd import Variable
 from torchvision.transforms import ToTensor
 from torchvision import transforms
+import imageio
+import numpy as np
+import matplotlib.pyplot as plt
+import numpy as np
 
 
-def calculate_psnr(img1, img2):
+class Checkpoint():
+    def __init__(self, args, model, experiment_name):
+        self.args = args
+        self.log = torch.Tensor()
+        self.model = model
+        self.loss_list = []
+        self.psnr_list = []
+        self.best_psnr = 0
+        now = datetime.datetime.now().strftime('%Y-%m-%d-%H:%M:%S')
+        if not os.path.exists("checkpoint"):
+            os.mkdir("checkpoint")
+        self.checkpoint_dir = os.path.join("checkpoint", experiment_name)
+        if os.path.exists(self.checkpoint_dir):
+            shutil.rmtree(self.checkpoint_dir)
+        os.mkdir(self.checkpoint_dir)
+        self.log_file_path = os.path.join(self.checkpoint_dir, "log.txt")
+        # 先写开头部分
+        with open(self.log_file_path, "w") as f:
+            f.write(now + "\n")
+
+    def record_epoch(self, epoch, epoch_loss, epoch_psnr):
+        if epoch_psnr > self.best_psnr:
+            self.best_psnr = epoch_psnr
+            torch.save(self.model.state_dict(), os.path.join(self.checkpoint_dir, "best.pth"))
+            print("模型已保存")
+        self.write_log("epoch :{}".format(epoch))
+        self.write_log("loss :{}".format(epoch_loss))
+        self.write_log("psnr :{}    best psnr:{}".format(epoch_psnr, self.best_psnr))
+
+    def save_final(self):
+        self.plot_loss()
+        self.plot_psnr()
+        torch.save(self.model.state_dict(), os.path.join(self.checkpoint_dir, "final.pth"))
+
+    def write_log(self, log):
+        print(log)
+        with open(self.log_file_path, "a") as f:
+            f.write(log)
+            f.write("\n")
+
+    def plot_loss(self):
+        plt.figure(figsize=(10, 5))
+        plt.plot(self.loss_list, 'b', label='loss')
+        plt.legend()
+        plt.grid()
+        plt.savefig('{}/loss.png'.format(self.checkpoint_dir), dpi=256)
+        plt.close()
+
+    def plot_psnr(self):
+        plt.figure(figsize=(10, 5))
+        plt.plot(self.psnr_list, 'b', label='psnr')
+        plt.legend()
+        plt.grid()
+        plt.title('best psnr=%5.2f' % self.best_psnr)
+        plt.savefig('{}/psnr.png'.format(self.checkpoint_dir), dpi=256)
+        plt.close()
+
+
+def quantize(img, rgb_range):
+    pixel_range = 255 / rgb_range
+    return img.mul(pixel_range).clamp(0, 255).round().div(pixel_range)
+
+
+def calculate_psnr(sr, hr, scale, rgb_range, benchmark=False):
     '''
     计算两张图片之间的PSNR误差
 
@@ -22,21 +95,40 @@ def calculate_psnr(img1, img2):
     :param img2:
     :return:
     '''
-    return 10. * torch.log10(1. / torch.mean((img1 - img2) ** 2)).item()
 
+    if len(sr.size()) < 4:
+        sr = sr.unsqueeze(0)
+    if len(hr.size()) < 4:
+        hr = hr.unsqueeze(0)
+    diff = (sr - hr).data.div(rgb_range)
+    shave = scale
+    if diff.size(1) > 1:
+        # print(diff)
+        convert = diff.new(1, 3, 1, 1)
+        convert[0, 0, 0, 0] = 65.738
+        convert[0, 1, 0, 0] = 129.057
+        convert[0, 2, 0, 0] = 25.064
+        diff.mul_(convert).div_(256)
+        diff = diff.sum(dim=1, keepdim=True)
+    '''
+    if benchmark:
+        shave = scale
+        if diff.size(1) > 1:
+            convert = diff.new(1, 3, 1, 1)
+            convert[0, 0, 0, 0] = 65.738
+            convert[0, 1, 0, 0] = 129.057
+            convert[0, 2, 0, 0] = 25.064
+            diff.mul_(convert).div_(256)
+            diff = diff.sum(dim=1, keepdim=True)
+    else:
+        shave = scale + 6
+    '''
+    valid = diff[:, :, shave:-shave, shave:-shave]
+    mse = valid.pow(2).mean()
 
-def create_kernel(kernel_size, channel):
-    '''
-    创建计算核并分配权重
-    :param kernel_size:
-    :return:
-    '''
-    # 仅计算平均数
-    kernel = torch.Tensor([[
-        [[1 for i in range(kernel_size)] for i in range(kernel_size)]
-        for i in range(channel)] for i in range(channel)]).cuda()
-    kernel /= kernel.sum()
-    return kernel
+    return -10 * math.log10(mse)
+
+    # return 10. * torch.log10(1. / torch.mean((img1 - img2) ** 2)).item()
 
 
 def calculate_ssim(img1, img2, kernel_size=11):
@@ -47,6 +139,20 @@ def calculate_ssim(img1, img2, kernel_size=11):
     :param kernel_size: 滑动窗口大小
     :return:
     '''
+
+    def create_kernel(kernel_size, channel):
+        '''
+        创建计算核并分配权重
+        :param kernel_size:
+        :return:
+        '''
+        # 仅计算平均数
+        kernel = torch.Tensor([[
+            [[1 for i in range(kernel_size)] for i in range(kernel_size)]
+            for i in range(channel)] for i in range(channel)]).cuda()
+        kernel /= kernel.sum()
+        return kernel
+
     k1 = 0.01
     k2 = 0.03
     if torch.max(img1) > 128:
@@ -81,52 +187,33 @@ def calculate_ssim(img1, img2, kernel_size=11):
     return ssim
 
 
-def tensor_to_image(tensor):
-    # tr_mean, tr_std = [0.485, 0.456, 0.406], [0.229, 0.224, 0.225]
-    # mu = torch.Tensor(tr_mean).view(-1, 1, 1).cuda()
-    # sigma = torch.Tensor(tr_std).view(-1, 1, 1).cuda()
-    # img = transforms.ToPILImage()((tensor * sigma + mu).clamp(0, 1))
-    img = transforms.ToPILImage()(tensor)
-    return img
+def crop_img(img, img_size, n):
+    # print(img.size())
+    patch_size = img_size // n
+    img_list = []
+    for i in range(n):
+        for j in range(n):
+            img_list.append(img[..., i * patch_size:(i + 1) * patch_size,
+                            j * patch_size:(j + 1) * patch_size])
+    out = torch.cat(img_list, 0)
+    # print(out.size())
+    return out
 
 
-def test_model(model, test_image_path, upscale_factor, save_name):
-    '''
-    测试模型效果
-
-    :param model: 要测试的模型
-    :param test_image_path: 用于测试的图片的位置
-    :param upscale_factor: 放大倍数
-    :return:
-    '''
-
-    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-    model.to(device)
-    origin_image = Image.open(test_image_path).convert('RGB')
-    img_name, suffix = os.path.splitext(test_image_path)
-    image_width = (origin_image.width // upscale_factor) * upscale_factor
-    image_height = (origin_image.height // upscale_factor) * upscale_factor
-
-    hr_image = origin_image.resize((image_width, image_height), resample=Image.BICUBIC)
-    lr_image = origin_image.resize((image_width // upscale_factor, image_height // upscale_factor),
-                                   resample=Image.BICUBIC)
-
-    x = Variable(ToTensor()(lr_image)).to(device).unsqueeze(0)  # 补上batch_size那一维
-    y = Variable(ToTensor()(hr_image)).to(device)
-
-    with torch.no_grad():
-        # out = model(x).clip(0, 1).squeeze()
-        out = model(x).clip(0, 1)
-        out = out.squeeze()
-    psnr = calculate_psnr(y, out)
-    out_y, _, _ = transforms.ToPILImage()(out).convert('YCbCr').split()
-    hr_y, _, _ = hr_image.convert('YCbCr').split()
-    # print(out_y.size)
-    # print(hr_y.size)
-    ssim = calculate_ssim(Variable(ToTensor()(hr_y)).to(device),
-                          Variable(ToTensor()(out_y)).to(device))
-    print('{} PSNR: {}'.format(save_name, psnr))
-    print('{} SSIM: {}'.format(save_name, ssim))
-    out = tensor_to_image(out)
-    out.save(img_name + '_{}_x{}'.format(save_name, upscale_factor) + suffix)
-    return
+def time_format(second):
+    m, s = divmod(second, 60)
+    m = round(m)
+    s = round(s)
+    if m < 60:
+        return "{}m{}s".format(m, s)
+    else:
+        h, m = divmod(m, 60)
+        h = round(h)
+        m = round(m)
+    if h < 24:
+        return "{}h{}m{}s".format(h, m, s)
+    else:
+        d, h = divmod(h, 24)
+        d = round(d)
+        h = round(h)
+    return "{}d{}h{}m{}s".format(d, h, m, s)
