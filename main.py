@@ -26,8 +26,8 @@ def setup_seed(seed):
 
 if __name__ == '__main__':
     setup_seed(args.seed)
-    # model = RCAN.RCAN(args)
-    model = GradualSR.GradualSR(args)
+    model = RCAN.RCAN(args)
+    # model = GradualSR.GradualSR(args)
     loader = data.Data(args)
     loss = loss.Loss(args)
     trainer = Trainer.Trainer(args, model, loader, loss)

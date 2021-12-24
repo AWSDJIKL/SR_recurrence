@@ -25,7 +25,7 @@ class Trainer():
         self.train_loader = loader.train_loader
         self.test_loader = loader.test_loader
         self.model = model
-        self.is_PMG = True
+        self.is_PMG = False
         self.loss = loss
         self.optimizer = self.make_optimizer()
         self.scheduler = self.make_scheduler()
@@ -170,7 +170,7 @@ class Trainer():
 
     def is_finsh(self):
         epoch = self.scheduler.last_epoch + 1
-        if epoch >= self.args.epoch:
+        if epoch > self.args.epoch:
             self.checkpoint.save_final()
             return True
         else:

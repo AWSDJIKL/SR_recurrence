@@ -39,7 +39,7 @@ parser.add_argument('--reduction', type=int, default=16,
                     help='number of feature maps reduction')
 
 # train setting
-parser.add_argument("--epoch", type=int, default=100, help="")
+parser.add_argument("--epoch", type=int, default=400, help="")
 parser.add_argument('--test_every', type=int, default=100,
                     help='do test per every N batches')
 parser.add_argument("--seed", type=int, default=100, help="")

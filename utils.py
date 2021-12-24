@@ -52,6 +52,8 @@ class Checkpoint():
         self.write_log("epoch :{}".format(epoch))
         self.write_log("loss :{}".format(epoch_loss))
         self.write_log("psnr :{}    best psnr:{}".format(epoch_psnr, self.best_psnr))
+        self.loss_list.append(epoch_loss)
+        self.psnr_list.append(epoch_psnr)
 
     def save_final(self):
         self.plot_loss()
