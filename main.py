@@ -26,8 +26,11 @@ def setup_seed(seed):
 
 if __name__ == '__main__':
     setup_seed(args.seed)
-    model = RCAN.RCAN(args)
-    # model = GradualSR.GradualSR(args)
+    if args.is_PMG:
+        model = GradualSR.GradualSR(args)
+    else:
+        model = RCAN.RCAN(args)
+
     loader = data.Data(args)
     loss = loss.Loss(args)
     trainer = Trainer.Trainer(args, model, loader, loss)

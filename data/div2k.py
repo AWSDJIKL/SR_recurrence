@@ -20,7 +20,7 @@ import torch.utils.data as data
 class DIV2K(srdata.SRData):
     def __init__(self, args, train=True):
         super(DIV2K, self).__init__(args, train)
-        self.repeat = args.test_every // (len(self.lr_list) // args.batch_size)
+        # self.repeat = args.test_every // (len(self.lr_list) // args.batch_size)
 
     def _scan(self):
         '''
@@ -49,7 +49,9 @@ class DIV2K(srdata.SRData):
             self.lr_dir = "dataset/DIV2K_train_LR/DIV2K_train_LR_bicubic/X4/npy"
 
     def __len__(self):
-        return len(self.lr_list) * self.repeat
+        # return len(self.lr_list) * self.repeat
+        return len(self.lr_list)
 
     def _get_index(self, index):
-        return index % len(self.lr_list)
+        # return index % len(self.lr_list)
+        return index

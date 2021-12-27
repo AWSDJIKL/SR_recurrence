@@ -25,7 +25,7 @@ class Trainer():
         self.train_loader = loader.train_loader
         self.test_loader = loader.test_loader
         self.model = model
-        self.is_PMG = False
+        self.is_PMG = args.is_PMG
         self.loss = loss
         self.optimizer = self.make_optimizer()
         self.scheduler = self.make_scheduler()
@@ -36,9 +36,7 @@ class Trainer():
             self.model.half()
             self.loss.half()
         self.model.to(self.device)
-
         self.loss.to(self.device)
-
         experiment_name = model.__class__.__name__ + "_" + loss.loss_name
         self.checkpoint = utils.Checkpoint(args, self.model, experiment_name)
 
@@ -51,6 +49,9 @@ class Trainer():
         epoch_loss = 0
         epoch_psnr = 0
         progress = tqdm.tqdm(self.train_loader, total=len(self.train_loader))
+        if self.is_PMG:
+            for i in self.loss.loss_weight:
+                print(i.data)
         for (lr, hr, img_name) in progress:
             lr = self.prepare(lr)
             hr = self.prepare(hr)
@@ -59,17 +60,17 @@ class Trainer():
                 hr_size = self.args.patch_size
                 lr_list = []
                 hr_list = []
-                for n in [64, 16, 4]:
+                for n in [16, 8, 4]:
                     lr_list.append(utils.crop_img(lr, lr_size, n))
                     hr_list.append((utils.crop_img(hr, hr_size, n)))
                 lr_list.append(lr)
                 hr_list.append(hr)
+                self.optimizer.zero_grad()
                 for i in range(4):
-                    self.optimizer.zero_grad()
                     # print(lr_list[i].device)
                     # print(next(self.model.parameters()).device)
                     sr = self.model(lr_list[i], i)
-                    loss = self.loss(sr, hr_list[i])
+                    loss = self.loss(sr, hr_list[i], i)
                     loss.backward()
                     self.optimizer.step()
                     epoch_loss += loss.item() / 4
@@ -130,7 +131,7 @@ class Trainer():
         # filter函数(判断函数，列表)，过滤列表中的所有项，然后返回能通过函数的项
         # 此处表示提取模型中所有可以训练的参数项
         trainable = filter(lambda x: x.requires_grad, self.model.parameters())
-
+        loss_trainable = filter(lambda x: x.requires_grad, self.loss.parameters())
         if self.args.optimizer == 'SGD':
             optimizer_function = optim.SGD
             kwargs = {'momentum': self.args.momentum}
@@ -147,7 +148,8 @@ class Trainer():
         kwargs['lr'] = self.args.lr
         kwargs['weight_decay'] = self.args.weight_decay
 
-        return optimizer_function(trainable, **kwargs)
+        # return optimizer_function(trainable, **kwargs)
+        return optimizer_function([{"params": trainable}, {"params": loss_trainable}], **kwargs)
 
     def make_scheduler(self):
         if self.args.decay_type == 'step':

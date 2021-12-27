@@ -14,7 +14,7 @@ parser.add_argument("--train_set", type=str, default="DIV2K", help="train set na
 parser.add_argument("--test_set", type=str, default="Set5", help="test set name")
 parser.add_argument("--scale", type=int, default=4, help="")
 parser.add_argument("--data_type", type=str, default="npy", help="")
-parser.add_argument("--batch_size", type=int, default=10, help="")
+parser.add_argument("--batch_size", type=int, default=6, help="")
 parser.add_argument("--patch_size", type=int, default=512, help="")
 parser.add_argument("--rgb_range", type=int, default=255, help="")
 parser.add_argument("--n_color", type=int, default=3, help="")
@@ -24,6 +24,7 @@ parser.add_argument('--n_colors', type=int, default=3,
                     help='number of color channels to use')
 # model setting
 # parser.add_argument("--model_name", type=str, default="RCAN", help="")
+parser.add_argument("--is_PMG", type=lambda x: x.lower() == 'true', default=True, help="")
 parser.add_argument('--n_resgroups', type=int, default=4,
                     help='number of residual groups')
 parser.add_argument('--n_resblocks', type=int, default=4,
@@ -39,8 +40,8 @@ parser.add_argument('--reduction', type=int, default=16,
                     help='number of feature maps reduction')
 
 # train setting
-parser.add_argument("--epoch", type=int, default=400, help="")
-parser.add_argument('--test_every', type=int, default=100,
+parser.add_argument("--epoch", type=int, default=100, help="")
+parser.add_argument('--test_every', type=int, default=1000,
                     help='do test per every N batches')
 parser.add_argument("--seed", type=int, default=100, help="")
 parser.add_argument("--device", type=str, default="cuda:0",
@@ -71,7 +72,7 @@ parser.add_argument('--epsilon', type=float, default=1e-8,
 parser.add_argument('--weight_decay', type=float, default=0,
                     help='weight decay')
 # Loss setting
-parser.add_argument('--loss_name', type=str, default='1_L1',
-                    help='loss function configuration')
+# parser.add_argument('--loss_name', type=str, default='1_L1', help='loss function configuration')
+parser.add_argument('--loss_name', type=str, default='1_VGG+1_L1+1_L1+1_L1', help='loss function configuration')
 
 args = parser.parse_args()
