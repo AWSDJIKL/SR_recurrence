@@ -65,8 +65,8 @@ class Trainer():
                 hr_size = self.args.patch_size
                 lr_list = []
                 hr_list = []
-                for n in [16, 8, 4]:
-                    # for n in [64, 16, 4]:
+                # for n in [16, 8, 4]:
+                for n in [64, 16, 4]:
                     lr_list.append(utils.crop_img(lr, lr_size, n))
                     hr_list.append((utils.crop_img(hr, hr_size, n)))
                 lr_list.append(lr)
@@ -108,7 +108,6 @@ class Trainer():
         epoch_psnr /= len(self.test_loader)
         self.scheduler.step()
         self.checkpoint.record_epoch(epoch, epoch_loss, epoch_psnr, self.optimizer, self.scheduler)
-
 
     def prepare(self, tensor):
         if self.half_precision:
