@@ -5,6 +5,7 @@
 # @Time    : 2021/12/3 11:59
 # @Author  : LINYANZHEN
 # @File    : utils.py
+import random
 import shutil
 
 import torch
@@ -27,33 +28,61 @@ import numpy as np
 class Checkpoint():
     def __init__(self, args, model, experiment_name):
         self.args = args
-        self.log = torch.Tensor()
         self.model = model
-        self.loss_list = []
-        self.psnr_list = []
-        self.best_psnr = 0
-        now = datetime.datetime.now().strftime('%Y-%m-%d-%H:%M:%S')
-        if not os.path.exists("checkpoint"):
-            os.mkdir("checkpoint")
         self.checkpoint_dir = os.path.join("checkpoint", experiment_name)
-        if os.path.exists(self.checkpoint_dir):
-            shutil.rmtree(self.checkpoint_dir)
-        os.mkdir(self.checkpoint_dir)
+        self.model_checkpoint_dir = os.path.join(self.checkpoint_dir, "model")
         self.log_file_path = os.path.join(self.checkpoint_dir, "log.txt")
-        # 先写开头部分
-        with open(self.log_file_path, "w") as f:
-            f.write(now + "\n")
+        self.loss_log = os.path.join(self.checkpoint_dir, "loss.npy")
+        self.psnr_log = os.path.join(self.checkpoint_dir, "psnr.npy")
+        if args.load_checkpoint:
+            print("正在加载保存点")
+            # 加载保存点
+            self.model_checkpoint_dir = os.path.join(self.checkpoint_dir, "model")
+            log_dict = np.load(os.path.join(self.checkpoint_dir, "log_dict.npy"), allow_pickle=True)
+            self.best_psnr = log_dict.item().get("best_psnr")
+            self.loss_list = log_dict.item().get("loss_list")
+            self.psnr_list = log_dict.item().get("psnr_list")
+        else:
+            print("正在初始化")
+            self.loss_list = []
+            self.psnr_list = []
+            self.best_psnr = 0
+            now = datetime.datetime.now().strftime('%Y-%m-%d-%H:%M:%S')
+            if not os.path.exists("checkpoint"):
+                os.mkdir("checkpoint")
+            if os.path.exists(self.checkpoint_dir):
+                shutil.rmtree(self.checkpoint_dir)
+            os.mkdir(self.checkpoint_dir)
+            os.mkdir(self.model_checkpoint_dir)
+            # 先写开头部分
+            with open(self.log_file_path, "w") as f:
+                f.write(now + "\n")
+        # 记录配置文件
+        with open(os.path.join(self.checkpoint_dir, "option.txt"), "w") as f:
+            for parameter in dir(args):
+                if parameter[0] == "_":
+                    continue
+                f.write("{} {}\n".format(parameter, getattr(args, parameter)))
 
-    def record_epoch(self, epoch, epoch_loss, epoch_psnr):
+    def record_epoch(self, epoch, epoch_loss, epoch_psnr, optimizer, scheduler):
         if epoch_psnr > self.best_psnr:
             self.best_psnr = epoch_psnr
-            torch.save(self.model.state_dict(), os.path.join(self.checkpoint_dir, "best.pth"))
-            print("模型已保存")
+        torch.save(self.model.state_dict(), os.path.join(self.model_checkpoint_dir, "{}.pth".format(epoch)))
+        torch.save(optimizer.state_dict(), os.path.join(self.checkpoint_dir, "optimizer.pth"))
+        torch.save(scheduler.state_dict(), os.path.join(self.checkpoint_dir, "scheduler.pth"))
         self.write_log("epoch :{}".format(epoch))
         self.write_log("loss :{}".format(epoch_loss))
         self.write_log("psnr :{}    best psnr:{}".format(epoch_psnr, self.best_psnr))
         self.loss_list.append(epoch_loss)
         self.psnr_list.append(epoch_psnr)
+        self.plot_loss()
+        self.plot_psnr()
+        log_dict = {
+            "best_psnr": self.best_psnr,
+            "loss_list": self.loss_list,
+            "psnr_list": self.psnr_list,
+        }
+        np.save(os.path.join(self.checkpoint_dir, "log_dict.npy"), log_dict)
 
     def save_final(self):
         self.plot_loss()
@@ -189,6 +218,14 @@ def calculate_ssim(img1, img2, kernel_size=11):
     return ssim
 
 
+def save_img(tensor, save_dir, name):
+    normalized = tensor[0].data.mul(255 / 255)
+    # permute：交换维度函数，为了适应numpy，从(c,h,w)改为(h,w,c)
+    ndarr = normalized.byte().permute(1, 2, 0).cpu().numpy()
+    # 使用imageio.imsave函数保存，一共两个参数：路径，numpy数组(图片)
+    imageio.imsave(os.path.join(save_dir, "{}.png".format(name)), ndarr)
+
+
 def crop_img(img, img_size, n):
     # print(img.size())
     patch_size = img_size // n
@@ -197,6 +234,8 @@ def crop_img(img, img_size, n):
         for j in range(n):
             img_list.append(img[..., i * patch_size:(i + 1) * patch_size,
                             j * patch_size:(j + 1) * patch_size])
+
+    random.shuffle(img_list)
     out = torch.cat(img_list, 0)
     # print(out.size())
     return out

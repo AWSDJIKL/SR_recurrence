@@ -12,5 +12,6 @@ import torch
 
 # model = RCAN.make_model(args)
 # summary(model.to("cuda:0"), input_size=(3, 192, 192), batch_size=1)
-l = [torch.Tensor([0.5]) for _ in range(4)]
-print(torch.sum(torch.Tensor(l), dim=0))
+x = torch.Tensor([[[1, 2, 3], [2, 3, 4], [3, 4, 5]]])
+print(x.size())
+print(torch.nn.Softmax(dim=0)(x))

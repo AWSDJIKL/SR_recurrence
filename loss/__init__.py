@@ -44,21 +44,29 @@ class Loss(nn.Module):
         # self.loss_weight = nn.ParameterList([nn.Parameter(torch.Tensor([0.5])) for i in range(4)])
 
     def forward(self, sr, hr, step=0):
-        if self.is_PMG:
-            # print(sr.size())
-            # print(hr.size())
-            loss = self.loss[step]["function"](sr, hr)
-            loss = self.loss[step]["weight"] * loss
-            return loss
-        else:
-            losses = []
-            for i, l in enumerate(self.loss):
-                if l['function'] is not None:
-                    loss = l['function'](sr, hr)
-                    effective_loss = l['weight'] * loss
-                    losses.append(effective_loss)
-            loss_sum = sum(losses)
-            return loss_sum
+        # if self.is_PMG:
+        #     # print(sr.size())
+        #     # print(hr.size())
+        #     loss = self.loss[step]["function"](sr, hr)
+        #     loss = self.loss[step]["weight"] * loss
+        #     return loss
+        # else:
+        #     losses = []
+        #     for i, l in enumerate(self.loss):
+        #         if l['function'] is not None:
+        #             loss = l['function'](sr, hr)
+        #             effective_loss = l['weight'] * loss
+        #             losses.append(effective_loss)
+        #     loss_sum = sum(losses)
+        #     return loss_sum
+        losses = []
+        for i, l in enumerate(self.loss):
+            if l['function'] is not None:
+                loss = l['function'](sr, hr)
+                effective_loss = l['weight'] * loss
+                losses.append(effective_loss)
+        loss_sum = sum(losses)
+        return loss_sum
 
     def step(self):
         for l in self.get_loss_module():

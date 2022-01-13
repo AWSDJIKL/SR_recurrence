@@ -9,7 +9,7 @@ import random
 
 import numpy as np
 import torch
-from model import RCAN, GradualSR
+from model import RCAN, GradualSR, GSACA
 import Trainer
 import data
 from option import args
@@ -28,9 +28,9 @@ if __name__ == '__main__':
     setup_seed(args.seed)
     if args.is_PMG:
         model = GradualSR.GradualSR(args)
+        # model = GSACA.GSACA(args)
     else:
         model = RCAN.RCAN(args)
-
     loader = data.Data(args)
     loss = loss.Loss(args)
     trainer = Trainer.Trainer(args, model, loader, loss)

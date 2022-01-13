@@ -27,8 +27,6 @@ class Trainer():
         self.model = model
         self.is_PMG = args.is_PMG
         self.loss = loss
-        self.optimizer = self.make_optimizer()
-        self.scheduler = self.make_scheduler()
         # 是否使用半精度
         self.half_precision = args.half_precision
         self.device = args.device
@@ -37,8 +35,18 @@ class Trainer():
             self.loss.half()
         self.model.to(self.device)
         self.loss.to(self.device)
+
+        self.optimizer = self.make_optimizer()
+        self.scheduler = self.make_scheduler()
         experiment_name = model.__class__.__name__ + "_" + loss.loss_name
         self.checkpoint = utils.Checkpoint(args, self.model, experiment_name)
+        if args.load_checkpoint:
+            # 加载上一次的模型，优化器和学习率调整器
+            self.optimizer.load_state_dict(torch.load(os.path.join(self.checkpoint.checkpoint_dir, "optimizer.pth")))
+            self.scheduler.load_state_dict(torch.load(os.path.join(self.checkpoint.checkpoint_dir, "scheduler.pth")))
+            last_epoch = self.scheduler.last_epoch
+            checkpoint = torch.load(os.path.join(self.checkpoint.checkpoint_dir, "model/{}.pth".format(last_epoch)))
+            self.model.load_state_dict(checkpoint)
 
     def train_and_test(self):
         epoch = self.scheduler.last_epoch + 1
@@ -49,9 +57,6 @@ class Trainer():
         epoch_loss = 0
         epoch_psnr = 0
         progress = tqdm.tqdm(self.train_loader, total=len(self.train_loader))
-        if self.is_PMG:
-            for i in self.loss.loss_weight:
-                print(i.data)
         for (lr, hr, img_name) in progress:
             lr = self.prepare(lr)
             hr = self.prepare(hr)
@@ -61,16 +66,18 @@ class Trainer():
                 lr_list = []
                 hr_list = []
                 for n in [16, 8, 4]:
+                    # for n in [64, 16, 4]:
                     lr_list.append(utils.crop_img(lr, lr_size, n))
                     hr_list.append((utils.crop_img(hr, hr_size, n)))
                 lr_list.append(lr)
                 hr_list.append(hr)
-                self.optimizer.zero_grad()
                 for i in range(4):
                     # print(lr_list[i].device)
                     # print(next(self.model.parameters()).device)
+                    self.optimizer.zero_grad()
                     sr = self.model(lr_list[i], i)
-                    loss = self.loss(sr, hr_list[i], i)
+                    # loss = self.loss(sr, hr_list[i], i)
+                    loss = self.loss(sr, hr_list[i])
                     loss.backward()
                     self.optimizer.step()
                     epoch_loss += loss.item() / 4
@@ -99,8 +106,9 @@ class Trainer():
                 psnr = utils.calculate_psnr(sr, hr, self.args.scale, self.args.rgb_range)
                 epoch_psnr += psnr
         epoch_psnr /= len(self.test_loader)
-        self.checkpoint.record_epoch(epoch, epoch_loss, epoch_psnr)
         self.scheduler.step()
+        self.checkpoint.record_epoch(epoch, epoch_loss, epoch_psnr, self.optimizer, self.scheduler)
+
 
     def prepare(self, tensor):
         if self.half_precision:
@@ -131,7 +139,7 @@ class Trainer():
         # filter函数(判断函数，列表)，过滤列表中的所有项，然后返回能通过函数的项
         # 此处表示提取模型中所有可以训练的参数项
         trainable = filter(lambda x: x.requires_grad, self.model.parameters())
-        loss_trainable = filter(lambda x: x.requires_grad, self.loss.parameters())
+        # loss_trainable = filter(lambda x: x.requires_grad, self.loss.parameters())
         if self.args.optimizer == 'SGD':
             optimizer_function = optim.SGD
             kwargs = {'momentum': self.args.momentum}
@@ -148,8 +156,8 @@ class Trainer():
         kwargs['lr'] = self.args.lr
         kwargs['weight_decay'] = self.args.weight_decay
 
-        # return optimizer_function(trainable, **kwargs)
-        return optimizer_function([{"params": trainable}, {"params": loss_trainable}], **kwargs)
+        return optimizer_function(trainable, **kwargs)
+        # return optimizer_function([{"params": trainable}, {"params": loss_trainable}], **kwargs)
 
     def make_scheduler(self):
         if self.args.decay_type == 'step':
