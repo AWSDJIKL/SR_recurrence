@@ -12,6 +12,43 @@ import torch.nn as nn
 from model import common
 
 
+class MHSA(nn.Module):
+    def __init__(self, channels, width, heigh):
+        super(MHSA, self).__init__()
+        self.query = nn.Conv2d(channels, channels, (1, 1))
+        self.key = nn.Conv2d(channels, channels, (1, 1))
+        self.value = nn.Conv2d(channels, channels, (1, 1))
+
+        # self.rel_h = nn.Parameter(torch.randn([1, 3, 1, heigh]), requires_grad=True)
+        # self.rel_w = nn.Parameter(torch.randn([1, 3, width, 1]), requires_grad=True)
+        # self.width = width
+        # self.heigh = heigh
+        self.softmax = nn.Softmax(dim=-1)
+
+    def forward(self, x):
+        b, c, w, h = x.size()
+
+        # w_linear = nn.Linear(self.width * 3, w * 3).to("cuda:1")
+        # h_linear = nn.Linear(self.heigh * 3, h * 3).to("cuda:1")
+
+        # print("{} {} {} {}".format(b, c, w, h))
+        q = self.query(x).view(b, c, -1)
+        k = self.key(x).view(b, c, -1)
+        v = self.value(x).view(b, c, -1)
+
+        content_content = torch.bmm(q.permute(0, 2, 1), k)
+        # content_position = (self.rel_h + self.rel_w).view(1, c, -1).permute(0, 2, 1)
+        # content_position = torch.matmul(content_position, q)
+
+        # energy = content_content + content_position
+        # attention = self.softmax(energy)
+        attention = self.softmax(content_content)
+        out = torch.bmm(v, attention.permute(0, 2, 1))
+        out = out.view(b, c, w, h)
+
+        return out + x
+
+
 ## Channel Attention (CA) Layer
 class CALayer(nn.Module):
     def __init__(self, channel, reduction=16):
@@ -25,11 +62,19 @@ class CALayer(nn.Module):
             nn.Conv2d(channel // reduction, channel, 1, padding=0, bias=True),
             nn.Sigmoid()
         )
+        self.conv2d = nn.Conv2d(in_channels=2, out_channels=1, kernel_size=7, stride=1, padding=3)
+        self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
         ca = self.avg_pool(x)
         ca = self.conv_du(ca)
-        return x * ca
+
+        avgout = torch.mean(x, dim=1, keepdim=True)
+        maxout, _ = torch.max(x, dim=1, keepdim=True)
+        sa = torch.cat([avgout, maxout], dim=1)
+        sa = self.sigmoid(self.conv2d(sa))
+
+        return x * sa * ca
 
 
 # SpatialAttention（SA）Layer
@@ -59,8 +104,9 @@ class RCAB(nn.Module):
             modules_body.append(conv(n_feat, n_feat, kernel_size, bias=bias))
             if bn: modules_body.append(nn.BatchNorm2d(n_feat))
             if i == 0: modules_body.append(act)
+        # modules_body.append(SALayer())
         modules_body.append(CALayer(n_feat, reduction))
-        modules_body.append(SALayer())
+        # modules_body.append(MHSA(n_feat, 48, 48))
         self.body = nn.Sequential(*modules_body)
         self.res_scale = res_scale
 
@@ -107,25 +153,36 @@ class GSACA(nn.Module):
         # define head module
         modules_head = [conv(args.n_colors, n_feats, kernel_size)]
 
-        self.rg_list = nn.Sequential(
-            *list([ResidualGroup(conv, n_feats, kernel_size, reduction, act=act, res_scale=args.res_scale,
-                                 n_resblocks=n_resblocks) for _ in range(4)]))
-        upsample_list = [nn.Sequential(*[
+        # define body module
+        modules_body = [
+            ResidualGroup(
+                conv, n_feats, kernel_size, reduction, act=act, res_scale=args.res_scale, n_resblocks=n_resblocks) \
+            for _ in range(4)]
+
+        self.mid_conv = conv(n_feats, n_feats, kernel_size)
+
+        # define tail module
+        modules_tail = [
+            # conv(n_feats, n_feats, kernel_size),
             common.Upsampler(conv, scale, n_feats, act=False),
-            conv(n_feats, args.n_colors, kernel_size)]) for _ in range(4)]
-        self.upsample_list = nn.Sequential(*list([m for m in upsample_list]))
+            conv(n_feats, args.n_colors, kernel_size)]
 
         self.add_mean = common.MeanShift(args.rgb_range, rgb_mean, rgb_std, 1)
 
         self.head = nn.Sequential(*modules_head)
+        self.body = nn.Sequential(*modules_body)
+        self.tail = nn.Sequential(*[nn.Sequential(*modules_tail) for _ in range(4)])
 
-    def forward(self, x, step):
+    def forward(self, x, step=3):
         x = self.sub_mean(x)
         x = self.head(x)
-
+        res = x
         for i in range(step + 1):
-            x = self.rg_list[i](x)
-        x = self.upsample_list[step](x)
+            x = self.body[i](x)
+        x = self.mid_conv(x)
+        x += res
 
+        x = self.tail[step](x)
         x = self.add_mean(x)
+
         return x

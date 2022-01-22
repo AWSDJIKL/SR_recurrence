@@ -65,19 +65,19 @@ class Trainer():
                 hr_size = self.args.patch_size
                 lr_list = []
                 hr_list = []
-                # for n in [16, 8, 4]:
-                for n in [64, 16, 4]:
+                for n in [16, 8, 4]:
+                    # for n in [64, 16, 4]:
                     lr_list.append(utils.crop_img(lr, lr_size, n))
                     hr_list.append((utils.crop_img(hr, hr_size, n)))
                 lr_list.append(lr)
                 hr_list.append(hr)
-                for i in range(4):
+                for i, lr_rate in zip(range(4), [1, 1, 1, 2]):
                     # print(lr_list[i].device)
                     # print(next(self.model.parameters()).device)
                     self.optimizer.zero_grad()
                     sr = self.model(lr_list[i], i)
                     # loss = self.loss(sr, hr_list[i], i)
-                    loss = self.loss(sr, hr_list[i])
+                    loss = self.loss(sr, hr_list[i]) * lr_rate
                     loss.backward()
                     self.optimizer.step()
                     epoch_loss += loss.item() / 4

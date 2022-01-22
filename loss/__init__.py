@@ -60,6 +60,7 @@ class Loss(nn.Module):
         #     loss_sum = sum(losses)
         #     return loss_sum
         losses = []
+
         for i, l in enumerate(self.loss):
             if l['function'] is not None:
                 loss = l['function'](sr, hr)

@@ -8,14 +8,13 @@
 import argparse
 
 parser = argparse.ArgumentParser(description='Super Resolution framework')
-
 # dataset setting
 parser.add_argument("--train_set", type=str, default="DIV2K", help="train set name")
 parser.add_argument("--test_set", type=str, default="Set5", help="test set name")
 parser.add_argument("--scale", type=int, default=4, help="")
 parser.add_argument("--data_type", type=str, default="npy", help="")
 parser.add_argument("--batch_size", type=int, default=8, help="")
-parser.add_argument("--patch_size", type=int, default=512, help="")
+parser.add_argument("--patch_size", type=int, default=192, help="")
 parser.add_argument("--rgb_range", type=int, default=255, help="")
 parser.add_argument("--n_color", type=int, default=3, help="")
 parser.add_argument('--noise', type=str, default='.',
@@ -40,7 +39,7 @@ parser.add_argument('--reduction', type=int, default=16,
                     help='number of feature maps reduction')
 
 # train setting
-parser.add_argument("--epoch", type=int, default=1000, help="")
+parser.add_argument("--epoch", type=int, default=400, help="")
 parser.add_argument('--test_every', type=int, default=1000,
                     help='do test per every N batches')
 parser.add_argument("--seed", type=int, default=100, help="")
@@ -73,12 +72,8 @@ parser.add_argument('--weight_decay', type=float, default=0,
                     help='weight decay')
 # Loss setting
 parser.add_argument('--loss_name', type=str, default='1_L1', help='loss function configuration')
-# parser.add_argument('--loss_name', type=str, default='1_L1+1_L1+1_L1+1_L1', help='loss function configuration')
 
 # 是否加载上一次的保存点
-parser.add_argument('--load_checkpoint', type=lambda x: x.lower() == 'true', default=True,
+parser.add_argument('--load_checkpoint', type=lambda x: x.lower() == 'true', default=False,
                     help='load checkpoint to continue train')
-# 上一次保存点的位置
-# parser.add_argument('--checkpoint_dir', type=str, default='', help='checkpoint location')
-
 args = parser.parse_args()

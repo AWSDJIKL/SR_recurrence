@@ -235,7 +235,7 @@ def crop_img(img, img_size, n):
             img_list.append(img[..., i * patch_size:(i + 1) * patch_size,
                             j * patch_size:(j + 1) * patch_size])
 
-    random.shuffle(img_list)
+    # random.shuffle(img_list)
     out = torch.cat(img_list, 0)
     # print(out.size())
     return out

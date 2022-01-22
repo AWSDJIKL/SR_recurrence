@@ -95,6 +95,7 @@ class GradualSR(nn.Module):
             *list([ResidualGroup(conv, n_feats, kernel_size, reduction, act=act, res_scale=args.res_scale,
                                  n_resblocks=n_resblocks) for _ in range(4)]))
         upsample_list = [nn.Sequential(*[
+            conv(n_feats, n_feats, kernel_size),
             common.Upsampler(conv, scale, n_feats, act=False),
             conv(n_feats, args.n_colors, kernel_size)]) for _ in range(4)]
         self.upsample_list = nn.Sequential(*list([m for m in upsample_list]))
@@ -103,7 +104,7 @@ class GradualSR(nn.Module):
 
         self.head = nn.Sequential(*modules_head)
 
-    def forward(self, x, step):
+    def forward(self, x, step=3):
         x = self.sub_mean(x)
         x = self.head(x)
 
