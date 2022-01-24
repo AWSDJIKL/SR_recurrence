@@ -11,6 +11,8 @@ import torch
 import torch.nn as nn
 from model import common
 
+def make_model(args):
+    return GSACA(args)
 
 class MHSA(nn.Module):
     def __init__(self, channels, width, heigh):

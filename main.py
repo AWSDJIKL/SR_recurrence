@@ -9,11 +9,12 @@ import random
 
 import numpy as np
 import torch
-from model import RCAN, GradualSR, GSACA
+# from model import RCAN, GradualSR, GSACA
 import Trainer
 import data
 from option import args
 import loss
+import model
 
 
 def setup_seed(seed):
@@ -26,13 +27,13 @@ def setup_seed(seed):
 
 if __name__ == '__main__':
     setup_seed(args.seed)
-
-    # model = GradualSR.GradualSR(args)
+    m = model.get_model(args)
+    # # model = GradualSR.GradualSR(args)
     # model = GSACA.GSACA(args)
-    model = RCAN.RCAN(args)
-
+    # # model = RCAN.RCAN(args)
+    #
     loader = data.Data(args)
     loss = loss.Loss(args)
-    trainer = Trainer.Trainer(args, model, loader, loss)
+    trainer = Trainer.Trainer(args, m, loader, loss)
     while not trainer.is_finsh():
         trainer.train_and_test()

@@ -11,6 +11,8 @@ import torch
 import torch.nn as nn
 from model import common
 
+def make_model(args):
+    return GradualSR(args)
 
 ## Channel Attention (CA) Layer
 class CALayer(nn.Module):
