@@ -11,8 +11,10 @@ import torch
 import torch.nn as nn
 from model import common
 
+
 def make_model(args):
     return GradualSR(args)
+
 
 ## Channel Attention (CA) Layer
 class CALayer(nn.Module):
@@ -61,6 +63,7 @@ class RCAB(nn.Module):
 class ResidualGroup(nn.Module):
     def __init__(self, conv, n_feat, kernel_size, reduction, act, res_scale, n_resblocks):
         super(ResidualGroup, self).__init__()
+        modules_body = []
         modules_body = [
             RCAB(
                 conv, n_feat, kernel_size, reduction, bias=True, bn=False, act=nn.ReLU(True), res_scale=1) \
@@ -83,7 +86,7 @@ class GradualSR(nn.Module):
         reduction = args.reduction
         scale = args.scale
         act = nn.ReLU(True)
-
+        self.is_PMG = args.is_PMG
         # RGB mean for DIV2K
         rgb_mean = (0.4488, 0.4371, 0.4040)
         rgb_std = (1.0, 1.0, 1.0)
@@ -93,26 +96,31 @@ class GradualSR(nn.Module):
         # define head module
         modules_head = [conv(args.n_colors, n_feats, kernel_size)]
 
-        self.rg_list = nn.Sequential(
-            *list([ResidualGroup(conv, n_feats, kernel_size, reduction, act=act, res_scale=args.res_scale,
-                                 n_resblocks=n_resblocks) for _ in range(4)]))
-        upsample_list = [nn.Sequential(*[
-            conv(n_feats, n_feats, kernel_size),
+        modules_body = [
+            ResidualGroup(
+                conv, n_feats, kernel_size, reduction, act=act, res_scale=args.res_scale, n_resblocks=n_resblocks) \
+            for _ in range(4)]
+
+        self.body = nn.Sequential(*modules_body)
+
+        modules_tail = [nn.Sequential(*[
+            # conv(n_feats, n_feats, kernel_size),
             common.Upsampler(conv, scale, n_feats, act=False),
-            conv(n_feats, args.n_colors, kernel_size)]) for _ in range(4)]
-        self.upsample_list = nn.Sequential(*list([m for m in upsample_list]))
+            conv(n_feats, args.n_colors, kernel_size)]) for i in range(4)]
+        self.tail = nn.Sequential(*modules_tail)
 
+        self.mid_conv = conv(n_feats, n_feats, kernel_size)
         self.add_mean = common.MeanShift(args.rgb_range, rgb_mean, rgb_std, 1)
-
         self.head = nn.Sequential(*modules_head)
 
     def forward(self, x, step=3):
         x = self.sub_mean(x)
         x = self.head(x)
-
+        res = x
         for i in range(step + 1):
-            x = self.rg_list[i](x)
-        x = self.upsample_list[step](x)
-
+            x = self.body[i](x)
+        x = self.mid_conv(x)
+        x += res
+        x = self.tail[step](x)
         x = self.add_mean(x)
         return x
