@@ -45,7 +45,7 @@ class Trainer():
             self.optimizer.load_state_dict(torch.load(os.path.join(self.checkpoint.checkpoint_dir, "optimizer.pth")))
             self.scheduler.load_state_dict(torch.load(os.path.join(self.checkpoint.checkpoint_dir, "scheduler.pth")))
             last_epoch = self.scheduler.last_epoch
-            checkpoint = torch.load(os.path.join(self.checkpoint.checkpoint_dir, "model/{}.pth".format(last_epoch)))
+            checkpoint = torch.load(os.path.join(self.checkpoint.checkpoint_dir, "model/final.pth".format(last_epoch)))
             self.model.load_state_dict(checkpoint)
 
     def train_and_test(self):
@@ -69,6 +69,9 @@ class Trainer():
                     # for n in [64, 16, 4]:
                     lr_list.append(utils.crop_img(lr, lr_size, n))
                     hr_list.append((utils.crop_img(hr, hr_size, n)))
+                    # jigsaws_lr, jigsaws_hr = utils.jigsaw_generator(lr, hr, lr_size, hr_size, n)
+                    # lr_list.append(jigsaws_lr)
+                    # hr_list.append(jigsaws_hr)
                 lr_list.append(lr)
                 hr_list.append(hr)
                 for i, lr_rate in zip(range(4), [1, 1, 1, 2]):

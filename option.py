@@ -22,9 +22,10 @@ parser.add_argument('--noise', type=str, default='.',
 parser.add_argument('--n_colors', type=int, default=3,
                     help='number of color channels to use')
 # model setting
-parser.add_argument("--model_name", type=str, default="RCAN", help="")
+parser.add_argument("--model_name", type=str, default="MSARN", help="")
+# parser.add_argument("--model_name", type=str, default="GradualSR", help="")
 # parser.add_argument("--model_name", type=str, default="RCAN", help="")
-parser.add_argument("--is_PMG", type=lambda x: x.lower() == 'true', default=False, help="")
+parser.add_argument("--is_PMG", type=lambda x: x.lower() == 'true', default=True, help="")
 parser.add_argument('--n_resgroups', type=int, default=4,
                     help='number of residual groups')
 parser.add_argument('--n_resblocks', type=int, default=4,
@@ -40,7 +41,7 @@ parser.add_argument('--reduction', type=int, default=16,
                     help='number of feature maps reduction')
 
 # train setting
-parser.add_argument("--epoch", type=int, default=400, help="")
+parser.add_argument("--epoch", type=int, default=1000, help="")
 parser.add_argument('--test_every', type=int, default=1000,
                     help='do test per every N batches')
 parser.add_argument("--seed", type=int, default=100, help="")
@@ -73,6 +74,7 @@ parser.add_argument('--weight_decay', type=float, default=0,
                     help='weight decay')
 # Loss setting
 parser.add_argument('--loss_name', type=str, default='1_L1', help='loss function configuration')
+# parser.add_argument('--loss_name', type=str, default='1_VGG', help='loss function configuration')
 
 # 是否加载上一次的保存点
 parser.add_argument('--load_checkpoint', type=lambda x: x.lower() == 'true', default=False,

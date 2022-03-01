@@ -26,6 +26,9 @@ class Loss(nn.Module):
                 loss_function = nn.MSELoss()
             elif loss_type == 'L1':
                 loss_function = nn.L1Loss()
+            elif loss_type == "Charbonnier":
+                module = import_module("loss.Charbonnier")
+                loss_function = getattr(module, "L1_Charbonnier_loss")()
             elif loss_type.find('VGG') >= 0:
                 module = import_module('loss.vgg')
                 loss_function = getattr(module, 'VGG')(

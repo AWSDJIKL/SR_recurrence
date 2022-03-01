@@ -49,9 +49,9 @@ class DIV2K(srdata.SRData):
             self.lr_dir = "dataset/DIV2K_train_LR/DIV2K_train_LR_bicubic/X4/npy"
 
     def __len__(self):
-        return len(self.lr_list) * self.repeat
-        # return len(self.lr_list)
+        # return len(self.lr_list) * self.repeat
+        return len(self.lr_list)
 
     def _get_index(self, index):
-        return index % len(self.lr_list)
-        # return index
+        # return index % len(self.lr_list)
+        return index

@@ -67,7 +67,8 @@ class Checkpoint():
     def record_epoch(self, epoch, epoch_loss, epoch_psnr, optimizer, scheduler):
         if epoch_psnr > self.best_psnr:
             self.best_psnr = epoch_psnr
-        torch.save(self.model.state_dict(), os.path.join(self.model_checkpoint_dir, "{}.pth".format(epoch)))
+            torch.save(self.model.state_dict(), os.path.join(self.model_checkpoint_dir, "best.pth".format(epoch)))
+        torch.save(self.model.state_dict(), os.path.join(self.model_checkpoint_dir, "final.pth".format(epoch)))
         torch.save(optimizer.state_dict(), os.path.join(self.checkpoint_dir, "optimizer.pth"))
         torch.save(scheduler.state_dict(), os.path.join(self.checkpoint_dir, "scheduler.pth"))
         self.write_log("epoch :{}".format(epoch))
@@ -87,7 +88,7 @@ class Checkpoint():
     def save_final(self):
         self.plot_loss()
         self.plot_psnr()
-        torch.save(self.model.state_dict(), os.path.join(self.checkpoint_dir, "final.pth"))
+        # torch.save(self.model.state_dict(), os.path.join(self.checkpoint_dir, "final.pth"))
 
     def write_log(self, log):
         print(log)
@@ -239,6 +240,33 @@ def crop_img(img, img_size, n):
     out = torch.cat(img_list, 0)
     # print(out.size())
     return out
+
+
+def jigsaw_generator(lr, hr, lr_size, hr_size, n):
+    l = []
+    for a in range(n):
+        for b in range(n):
+            l.append([a, b])
+    lr_block_size = lr_size // n
+    hr_block_size = hr_size // n
+    rounds = n ** 2
+    random.shuffle(l)
+    jigsaws_lr = lr.clone()
+    jigsaws_hr = hr.clone()
+    for i in range(rounds):
+        x, y = l[i]
+        # lr
+        temp = jigsaws_lr[..., 0:lr_block_size, 0:lr_block_size].clone()
+        jigsaws_lr[..., 0:lr_block_size, 0:lr_block_size] = jigsaws_lr[..., x * lr_block_size:(x + 1) * lr_block_size,
+                                                            y * lr_block_size:(y + 1) * lr_block_size].clone()
+        jigsaws_lr[..., x * lr_block_size:(x + 1) * lr_block_size, y * lr_block_size:(y + 1) * lr_block_size] = temp
+        # hr
+        temp = jigsaws_hr[..., 0:hr_block_size, 0:hr_block_size].clone()
+        jigsaws_hr[..., 0:hr_block_size, 0:hr_block_size] = jigsaws_hr[..., x * hr_block_size:(x + 1) * hr_block_size,
+                                                            y * hr_block_size:(y + 1) * hr_block_size].clone()
+        jigsaws_hr[..., x * hr_block_size:(x + 1) * hr_block_size, y * hr_block_size:(y + 1) * hr_block_size] = temp
+
+    return jigsaws_lr, jigsaws_hr
 
 
 def time_format(second):
