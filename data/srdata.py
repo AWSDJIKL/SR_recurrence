@@ -16,6 +16,8 @@ import imageio
 import torch
 import torch.utils.data as data
 import tqdm
+from PIL import Image
+from torchvision import transforms
 
 
 class SRData(data.Dataset):
@@ -57,6 +59,15 @@ class SRData(data.Dataset):
                 self.hr_list = hr_list
         else:
             print('Please define data type')
+
+        self.lr_transform = transforms.Compose([
+            # 添加高斯噪声
+            transforms.GaussianBlur(3),
+            transforms.ToTensor()
+        ])
+        self.hr_transform = transforms.Compose([
+            transforms.ToTensor()
+        ])
 
     def _scan(self):
         '''

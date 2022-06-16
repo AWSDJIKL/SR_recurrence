@@ -27,7 +27,7 @@ def setup_seed(seed):
 
 if __name__ == '__main__':
     setup_seed(args.seed)
-    m = model.get_model(args)
+    m = model.get_model(args.model_name, args)
     # # model = GradualSR.GradualSR(args)
     # model = GSACA.GSACA(args)
     # # model = RCAN.RCAN(args)

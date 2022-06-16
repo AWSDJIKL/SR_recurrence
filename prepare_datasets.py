@@ -18,14 +18,15 @@ import numpy as np
 import wget
 from PIL import Image
 import imageio
+import tqdm
 
 link_list = {
-    "set5": "https://uofi.box.com/shared/static/kfahv87nfe8ax910l85dksyl2q212voc.zip",
-    "set14": "https://uofi.box.com/shared/static/igsnfieh4lz68l926l8xbklwsnnk8we9.zip",
+    "Set5": "https://uofi.box.com/shared/static/kfahv87nfe8ax910l85dksyl2q212voc.zip",
+    "Set14": "https://uofi.box.com/shared/static/igsnfieh4lz68l926l8xbklwsnnk8we9.zip",
     "BSD500": "http://www.eecs.berkeley.edu/Research/Projects/CS/vision/grouping/BSR/BSR_bsds500.tgz",
     "Urban100": "https://uofi.box.com/shared/static/65upg43jjd0a4cwsiqgl6o6ixube6klm.zip",
     "DIV2K_train_HR": "http://data.vision.ee.ethz.ch/cvl/DIV2K/DIV2K_train_HR.zip",
-    "DIV2K_train_LR": "http://data.vision.ee.ethz.ch/cvl/DIV2K/DIV2K_train_LR_bicubic_X4.zip",
+    # "DIV2K_train_LR": "http://data.vision.ee.ethz.ch/cvl/DIV2K/DIV2K_train_LR_bicubic_X4.zip",
     # "DIV2K_valid": "http://data.vision.ee.ethz.ch/cvl/DIV2K/DIV2K_valid_HR.zip",
     # "ms_coco_train": "http://images.cocodataset.org/zips/train2014.zip",
     # "ms_coco_val": "http://images.cocodataset.org/zips/val2014.zip",
@@ -74,6 +75,7 @@ def uncompress(src_file, output_dir=None):
         return
     os.remove(src_file)
 
+
 def download_datasets(dataset_path):
     if not os.path.exists(dataset_path):
         os.mkdir(dataset_path)
@@ -89,9 +91,67 @@ def download_datasets(dataset_path):
         uncompress(file_name)
 
 
+def get_hr_list(dataset):
+    hr_list = []
+    if dataset in ["Set5", "Set14"]:
+        for root, dirs, files in os.walk("dataset/{}/{}/image_SRF_4".format(dataset, dataset)):
+            for file in files:
+                if "HR" in file:
+                    hr_list.append(os.path.join(root, file))
+    elif dataset in ["BSD100", "Urban100"]:
+        for root, dirs, files in os.walk("dataset/{}/image_SRF_4".format(dataset)):
+            for file in files:
+                if "HR" in file:
+                    hr_list.append(os.path.join(root, file))
+    elif dataset in ["DIV2K"]:
+        for root, dirs, files in os.walk("dataset/DIV2K_train_HR/DIV2K_train_HR".format(dataset)):
+            for file in files:
+                if "png" in file:
+                    hr_list.append(os.path.join(root, file))
+    return hr_list
+
+
+def prepare_npy(hr_list, scale, save_path):
+    lr_save_path = os.path.join(save_path, "lr")
+    hr_save_path = os.path.join(save_path, "hr")
+    if not os.path.exists(save_path):
+        os.mkdir(save_path)
+        os.mkdir(lr_save_path)
+        os.mkdir(hr_save_path)
+    i = 0
+    process = tqdm.tqdm(hr_list)
+    for hr in process:
+        hr = Image.open(hr)
+        hr_width = hr.width
+        hr_height = hr.height
+        # 计算出lr与hr的大小
+        lr_width = hr_width // scale
+        lr_height = hr_height // scale
+        hr_width = lr_width * scale
+        hr_height = lr_height * scale
+        # 对图片进行裁剪并保存
+        hr = hr.crop((0, 0, hr_width, hr_height))
+        lr = hr.resize((lr_width, lr_height), Image.BICUBIC)
+        lr.save(os.path.join(lr_save_path, "{}.png".format(i)))
+        hr.save(os.path.join(hr_save_path, "{}.png".format(i)))
+        # 使用imageio读取，并保存为npy文件加速后续读取
+        lr = imageio.imread(os.path.join(lr_save_path, "{}.png".format(i)))
+        hr = imageio.imread(os.path.join(hr_save_path, "{}.png".format(i)))
+        np.save(os.path.join(lr_save_path, "{}.npy".format(i)), lr)
+        np.save(os.path.join(hr_save_path, "{}.npy".format(i)), hr)
+        i += 1
+
 
 if __name__ == '__main__':
     print("开始下载数据集")
     dataset_path = "dataset"
     download_datasets(dataset_path)
     print("所有数据集下载完成")
+
+    # print("开始生成数据集")
+    # # for scale in [2, 3, 4, 8, 16]:
+    # for scale in [4]:
+    #     for dataset in ["Set5", "Set14", "BSD100", "Urban100", "DIV2K"]:
+    #         hr_list = get_hr_list(dataset)
+    #         prepare_npy(hr_list, scale, "dataset/{}/x{}".format(dataset, scale))
+    #         print("数据集准备完成")

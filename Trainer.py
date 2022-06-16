@@ -45,9 +45,8 @@ class Trainer():
             self.optimizer.load_state_dict(torch.load(os.path.join(self.checkpoint.checkpoint_dir, "optimizer.pth")))
             self.scheduler.load_state_dict(torch.load(os.path.join(self.checkpoint.checkpoint_dir, "scheduler.pth")))
             last_epoch = self.scheduler.last_epoch
-            checkpoint = torch.load(os.path.join(self.checkpoint.checkpoint_dir, "model/final.pth".format(last_epoch)))
+            checkpoint = torch.load(os.path.join(self.checkpoint.checkpoint_dir, "model/final.pth"))
             self.model.load_state_dict(checkpoint)
-
     def train_and_test(self):
         epoch = self.scheduler.last_epoch + 1
         lr = self.scheduler.get_last_lr()[0]

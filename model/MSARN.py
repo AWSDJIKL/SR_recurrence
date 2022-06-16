@@ -76,49 +76,6 @@ class MSARB(nn.Module):
         return output
 
 
-class FMSRB(nn.Module):
-    def __init__(self, conv=common.default_conv, n_feats=64):
-        super(FMSRB, self).__init__()
-        self.conv3_1_1 = nn.Conv2d(n_feats, n_feats, (3, 1), (1, 1), (1, 0))
-        self.conv3_1_2 = nn.Conv2d(n_feats, n_feats, (1, 3), (1, 1), (0, 1))
-        self.conv5_1_1 = nn.Conv2d(n_feats, n_feats, (5, 1), (1, 1), (2, 0))
-        self.conv5_1_2 = nn.Conv2d(n_feats, n_feats, (1, 5), (1, 1), (0, 2))
-
-        self.conv3_2_1 = nn.Conv2d(n_feats * 2, n_feats * 2, (3, 1), (1, 1), (1, 0))
-        self.conv3_2_2 = nn.Conv2d(n_feats * 2, n_feats * 2, (1, 3), (1, 1), (0, 1))
-        self.conv5_2_1 = nn.Conv2d(n_feats * 2, n_feats * 2, (5, 1), (1, 1), (2, 0))
-        self.conv5_2_2 = nn.Conv2d(n_feats * 2, n_feats * 2, (1, 5), (1, 1), (0, 2))
-
-        self.down_sample_3 = nn.Conv2d(n_feats * 4, n_feats, (1, 1))
-
-        self.relu = nn.ReLU(inplace=True)
-        self.ca = AttentionLayer(n_feats)
-
-    def forward(self, x):
-        res = x
-
-        s1 = self.conv3_1_1(x)
-        s1 = self.conv3_1_2(s1)
-        s1 = self.relu(s1)
-        p1 = self.conv5_1_1(x)
-        p1 = self.conv5_1_2(p1)
-        p1 = self.relu(p1)
-
-        mid = torch.cat([s1, p1], 1)
-
-        s2 = self.conv3_2_1(mid)
-        s2 = self.conv3_2_2(s2)
-        s2 = self.relu(s2)
-        p2 = self.conv5_2_1(mid)
-        p2 = self.conv5_2_2(p2)
-        p2 = self.relu(p2)
-
-        output = self.down_sample_3(torch.cat([s2, p2], 1))
-        output = self.ca(output)
-        output += res
-
-        return output
-
 
 ## Residual Group (RG)
 class ResidualGroup(nn.Module):
@@ -126,8 +83,7 @@ class ResidualGroup(nn.Module):
         super(ResidualGroup, self).__init__()
         modules_body = []
         modules_body = [
-            # MSARB()
-            FMSRB()
+            MSARB()
             for _ in range(n_resblocks)]
         modules_body.append(conv(n_feat, n_feat, kernel_size))
         self.body = nn.Sequential(*modules_body)

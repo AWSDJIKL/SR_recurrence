@@ -9,6 +9,6 @@
 from importlib import import_module
 
 
-def get_model(args):
-    model = import_module("model." + args.model_name)
+def get_model(model_name, args):
+    model = import_module("model." + model_name)
     return model.make_model(args)

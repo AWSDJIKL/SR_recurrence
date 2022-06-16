@@ -40,6 +40,14 @@ def get_patch(img_in, img_tar, patch_size, scale):
     return img_in, img_tar
 
 
+def crop_img(img, patch_size):
+    ih, iw = img.shape[:2]
+    ix = random.randrange(0, iw - patch_size + 1)
+    iy = random.randrange(0, ih - patch_size + 1)
+    img = img[iy:iy + patch_size, ix:ix + patch_size, :]
+    return img
+
+
 def set_channel(l, n_channel):
     '''
     调整图片的通道数，使其符合要求
