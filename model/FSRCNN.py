@@ -11,12 +11,15 @@ from torch import nn
 
 
 def make_model(args):
+    print("prepare model")
+    print("FSRCNN")
     return FSRCNN(args)
 
 
 class FSRCNN(nn.Module):
     def __init__(self, args, d=56, s=12, m=4):
         super(FSRCNN, self).__init__()
+        self.support_PMG = False
         self.first_part = nn.Sequential(
             nn.Conv2d(3, 56, kernel_size=(5, 5), padding=(2, 2)),
             nn.PReLU(d)

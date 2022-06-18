@@ -12,6 +12,8 @@ import torch.nn as nn
 
 
 def make_model(args, parent=False):
+    print("prepare model")
+    print("MSRN")
     return MSRN(args)
 
 
@@ -45,7 +47,7 @@ class MSRB(nn.Module):
 class MSRN(nn.Module):
     def __init__(self, args, conv=common.default_conv):
         super(MSRN, self).__init__()
-
+        self.support_PMG = False
         n_feats = 64
         n_blocks = 8
         kernel_size = 3

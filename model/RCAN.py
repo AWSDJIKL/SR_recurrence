@@ -81,7 +81,7 @@ class ResidualGroup(nn.Module):
 class RCAN(nn.Module):
     def __init__(self, args, conv=common.default_conv):
         super(RCAN, self).__init__()
-
+        self.support_PMG = False
         n_resgroups = args.n_resgroups
         n_resblocks = args.n_resblocks
         n_feats = args.n_feats

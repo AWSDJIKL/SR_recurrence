@@ -17,6 +17,11 @@ import torch.nn.functional as F
 
 
 def make_model(args):
+    print("prepare model")
+    if args.is_PMG:
+        print("GSACA_PMG")
+    else:
+        print("GSACA")
     return GSACA(args)
 
 
@@ -186,6 +191,7 @@ class ResidualGroup(nn.Module):
 class GSACA(nn.Module):
     def __init__(self, args, conv=common.default_conv):
         super(GSACA, self).__init__()
+        self.support_PMG = True
         n_resblocks = args.n_resblocks
         n_feats = args.n_feats
         kernel_size = 3

@@ -60,15 +60,6 @@ class SRData(data.Dataset):
         else:
             print('Please define data type')
 
-        self.lr_transform = transforms.Compose([
-            # 添加高斯噪声
-            transforms.GaussianBlur(3),
-            transforms.ToTensor()
-        ])
-        self.hr_transform = transforms.Compose([
-            transforms.ToTensor()
-        ])
-
     def _scan(self):
         '''
         定义每个数据集的lr，hr路径

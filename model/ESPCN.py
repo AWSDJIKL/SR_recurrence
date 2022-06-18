@@ -8,12 +8,17 @@
 
 import torch.nn as nn
 
+
 def make_model(args):
+    print("prepare model")
+    print("ESPCN")
     return ESPCN(args)
+
 
 class ESPCN(nn.Module):
     def __init__(self, args):
         super(ESPCN, self).__init__()
+        self.support_PMG = False
         self.conv1 = nn.Conv2d(3, 64, (5, 5), (1, 1), (2, 2))
         self.conv2 = nn.Conv2d(64, 32, (3, 3), (1, 1), (1, 1))
         self.conv3 = nn.Conv2d(32, 3 * (args.scale ** 2), (3, 3), (1, 1), (1, 1))

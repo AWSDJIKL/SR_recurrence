@@ -30,23 +30,19 @@ class DIV2K(srdata.SRData):
         lr_list = []
         # 当需要同时训练多个放大倍率时需要的
         hr_list = []
-        for i in range(1, 801):
+        for i in range(800):
             if self.args.data_type.find('npy') >= 0 and not self.args.data_type.find('reset') >= 0:
-                lr_list.append(os.path.join(self.lr_dir, "{:0>4}x4.npy".format(i)))
-                hr_list.append(os.path.join(self.hr_dir, "{:0>4}.npy".format(i)))
+                lr_list.append(os.path.join(self.lr_dir, "{}.npy".format(i)))
+                hr_list.append(os.path.join(self.hr_dir, "{}.npy".format(i)))
             else:
-                lr_list.append(os.path.join(self.lr_dir, "{:0>4}x4.png".format(i)))
-                hr_list.append(os.path.join(self.hr_dir, "{:0>4}.png".format(i)))
+                lr_list.append(os.path.join(self.lr_dir, "{}.png".format(i)))
+                hr_list.append(os.path.join(self.hr_dir, "{}.png".format(i)))
 
         return lr_list, hr_list
 
     def _set_filesystem(self):
-        if self.args.data_type.find('img') >= 0 or self.args.data_type.find('reset') >= 0:
-            self.hr_dir = "dataset/DIV2K_train_HR/DIV2K_train_HR"
-            self.lr_dir = "dataset/DIV2K_train_LR/DIV2K_train_LR_bicubic/X4"
-        else:
-            self.hr_dir = "dataset/DIV2K_train_HR/DIV2K_train_HR/npy"
-            self.lr_dir = "dataset/DIV2K_train_LR/DIV2K_train_LR_bicubic/X4/npy"
+        self.hr_dir = "dataset/DIV2K_train_HR/x{}/hr".format(self.args.scale)
+        self.lr_dir = "dataset/DIV2K_train_HR/x{}/lr".format(self.args.scale)
 
     def __len__(self):
         # return len(self.lr_list) * self.repeat

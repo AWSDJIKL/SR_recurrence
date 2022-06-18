@@ -25,34 +25,32 @@ class Benchmark(srdata.SRData):
     def _scan(self):
         lr_list = []
         hr_list = []
+        dataset_size = 0
         if self.args.test_set == "Set5":
-            for i in range(1, 6):
-                lr_list.append(os.path.join(self.dir_lr, "img_{:0>3}_SRF_{}_LR.png".format(i, self.args.scale)))
-                hr_list.append(os.path.join(self.dir_hr, "img_{:0>3}_SRF_{}_HR.png".format(i, self.args.scale)))
+            dataset_size = 5
         elif self.args.test_set == "Set14":
-            for i in range(1, 15):
-                lr_list.append(os.path.join(self.dir_lr, "img_{:0>3}_SRF_{}_LR.png".format(i, self.args.scale)))
-                hr_list.append(os.path.join(self.dir_hr, "img_{:0>3}_SRF_{}_HR.png".format(i, self.args.scale)))
-        elif self.args.test_set == "BSD100":
-            for i in range(1, 101):
-                lr_list.append(os.path.join(self.dir_lr, "img_{:0>3}_SRF_{}_LR.png".format(i, self.args.scale)))
-                hr_list.append(os.path.join(self.dir_hr, "img_{:0>3}_SRF_{}_HR.png".format(i, self.args.scale)))
+            dataset_size = 14
+        elif self.args.test_set == "BSD500":
+            dataset_size = 500
         elif self.args.test_set == "Urban100":
-            for i in range(1, 101):
-                lr_list.append(os.path.join(self.dir_lr, "img_{:0>3}_SRF_{}_LR.png".format(i, self.args.scale)))
-                hr_list.append(os.path.join(self.dir_hr, "img_{:0>3}_SRF_{}_HR.png".format(i, self.args.scale)))
+            dataset_size = 100
+
+        for i in range(dataset_size):
+            lr_list.append(os.path.join(self.lr_dir, "{}.png".format(i)))
+            hr_list.append(os.path.join(self.hr_dir, "{}.png".format(i)))
+
         return lr_list, hr_list
 
     def _set_filesystem(self):
         if self.args.test_set == "Set5":
-            self.dir_hr = "dataset/set5/Set5/image_SRF_4"
-            self.dir_lr = "dataset/set5/Set5/image_SRF_4"
+            self.lr_dir = "dataset/Set5/x{}/lr".format(self.args.scale)
+            self.hr_dir = "dataset/Set5/x{}/hr".format(self.args.scale)
         elif self.args.test_set == "Set14":
-            self.dir_hr = "dataset/set14/Set14/image_SRF_4"
-            self.dir_lr = "dataset/set14/Set14/image_SRF_4"
-        elif self.args.test_set == "BSD100":
-            self.dir_hr = "dataset/BSD100_SR/image_SRF_4"
-            self.dir_lr = "dataset/BSD100_SR/image_SRF_4"
+            self.lr_dir = "dataset/Set14/x{}/lr".format(self.args.scale)
+            self.hr_dir = "dataset/Set14/x{}/hr".format(self.args.scale)
+        elif self.args.test_set == "BSD500":
+            self.lr_dir = "dataset/BSD500/x{}/lr".format(self.args.scale)
+            self.hr_dir = "dataset/BSD500/x{}/hr".format(self.args.scale)
         elif self.args.test_set == "Urban100":
-            self.dir_hr = "dataset/Urban100_SR/image_SRF_4"
-            self.dir_lr = "dataset/Urban100_SR/image_SRF_4"
+            self.lr_dir = "dataset/Urban100_SR/x{}/lr".format(self.args.scale)
+            self.hr_dir = "dataset/Urban100_SR/x{}/hr".format(self.args.scale)

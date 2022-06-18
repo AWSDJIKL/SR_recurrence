@@ -16,6 +16,11 @@ import torch.nn.functional as F
 
 
 def make_model(args):
+    print("prepare model")
+    if args.is_PMG:
+        print("MSARN_PMG")
+    else:
+        print("MSARN")
     return MSARN(args)
 
 
@@ -99,6 +104,7 @@ class ResidualGroup(nn.Module):
 class MSARN(nn.Module):
     def __init__(self, args, conv=common.default_conv):
         super(MSARN, self).__init__()
+        self.support_PMG = True
         n_resblocks = args.n_resblocks
         n_feats = args.n_feats
         kernel_size = 3

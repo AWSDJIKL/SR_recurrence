@@ -13,6 +13,11 @@ from model import common
 
 
 def make_model(args):
+    print("prepare model")
+    if args.is_PMG:
+        print("GradualSR_PMG")
+    else:
+        print("GradualSR")
     return GradualSR(args)
 
 
@@ -80,6 +85,7 @@ class ResidualGroup(nn.Module):
 class GradualSR(nn.Module):
     def __init__(self, args, conv=common.default_conv):
         super(GradualSR, self).__init__()
+        self.support_PMG = True
         n_resblocks = args.n_resblocks
         n_feats = args.n_feats
         kernel_size = 3

@@ -16,6 +16,7 @@ def make_model(args):
 class SRCNN(nn.Module):
     def __init__(self, args):
         super(SRCNN, self).__init__()
+        self.support_PMG = False
         self.upsample = nn.Upsample(scale_factor=args.scale)
         self.cnn = nn.Sequential(
             nn.Conv2d(3, 64, (9, 9), padding=(4, 4)),

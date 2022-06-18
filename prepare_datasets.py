@@ -8,6 +8,7 @@
 import gzip
 import os
 import shutil
+import ssl
 import tarfile
 import time
 import zipfile
@@ -76,6 +77,13 @@ def uncompress(src_file, output_dir=None):
     os.remove(src_file)
 
 
+def bar_progress(current, total, width=80):
+    progress_message = "Downloading: %d%% [%d / %d] bytes" % (current / total * 100, current, total)
+    # Don't use print() as it will print in new line every time.
+    sys.stdout.write("\r" + progress_message)
+    sys.stdout.flush()
+
+
 def download_datasets(dataset_path):
     if not os.path.exists(dataset_path):
         os.mkdir(dataset_path)
@@ -86,7 +94,7 @@ def download_datasets(dataset_path):
         if os.path.exists(output_path):
             shutil.rmtree(output_path)
         os.mkdir(output_path)
-        file_name = wget.download(link, output_path)
+        file_name = wget.download(link, output_path, bar=bar_progress)
         print(file_name)
         uncompress(file_name)
 
@@ -98,13 +106,18 @@ def get_hr_list(dataset):
             for file in files:
                 if "HR" in file:
                     hr_list.append(os.path.join(root, file))
-    elif dataset in ["BSD100", "Urban100"]:
+    elif dataset in ["Urban100"]:
         for root, dirs, files in os.walk("dataset/{}/image_SRF_4".format(dataset)):
             for file in files:
                 if "HR" in file:
                     hr_list.append(os.path.join(root, file))
-    elif dataset in ["DIV2K"]:
-        for root, dirs, files in os.walk("dataset/DIV2K_train_HR/DIV2K_train_HR".format(dataset)):
+    elif dataset in ["BSD500"]:
+        for root, dirs, files in os.walk("dataset/BSD500/BSR/BSDS500/data/images".format(dataset)):
+            for file in files:
+                if "jpg" in file:
+                    hr_list.append(os.path.join(root, file))
+    elif dataset in ["DIV2K_train_HR"]:
+        for root, dirs, files in os.walk("dataset/{}/{}".format(dataset, dataset)):
             for file in files:
                 if "png" in file:
                     hr_list.append(os.path.join(root, file))
@@ -112,6 +125,7 @@ def get_hr_list(dataset):
 
 
 def prepare_npy(hr_list, scale, save_path):
+    print("开始准备{}倍超分辨率数据集".format(scale))
     lr_save_path = os.path.join(save_path, "lr")
     hr_save_path = os.path.join(save_path, "hr")
     if not os.path.exists(save_path):
@@ -143,15 +157,18 @@ def prepare_npy(hr_list, scale, save_path):
 
 
 if __name__ == '__main__':
-    print("开始下载数据集")
-    dataset_path = "dataset"
-    download_datasets(dataset_path)
-    print("所有数据集下载完成")
+    # ssl._create_default_https_context = ssl._create_unverified_context
+    # print("开始下载数据集")
+    # dataset_path = "dataset"
+    # download_datasets(dataset_path)
+    # print("所有数据集下载完成")
 
-    # print("开始生成数据集")
-    # # for scale in [2, 3, 4, 8, 16]:
-    # for scale in [4]:
-    #     for dataset in ["Set5", "Set14", "BSD100", "Urban100", "DIV2K"]:
-    #         hr_list = get_hr_list(dataset)
-    #         prepare_npy(hr_list, scale, "dataset/{}/x{}".format(dataset, scale))
-    #         print("数据集准备完成")
+    print("开始生成数据集")
+
+    for dataset in ["Set5", "Set14", "BSD500", "Urban100", "DIV2K_train_HR"]:
+        print(dataset)
+        # for scale in [4]:
+        for scale in [2, 3, 4, 8, 16]:
+            hr_list = get_hr_list(dataset)
+            prepare_npy(hr_list, scale, "dataset/{}/x{}".format(dataset, scale))
+    print("数据集准备完成")

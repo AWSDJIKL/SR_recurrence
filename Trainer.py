@@ -38,7 +38,12 @@ class Trainer():
 
         self.optimizer = self.make_optimizer()
         self.scheduler = self.make_scheduler()
-        experiment_name = model.__class__.__name__ + "_" + loss.loss_name
+        if self.is_PMG and model.support_PMG:
+            experiment_name = model.__class__.__name__ + "_PMG_" + loss.loss_name
+        else:
+            args.is_PMG = False
+            self.is_PMG = False
+            experiment_name = model.__class__.__name__ + "_" + loss.loss_name
         self.checkpoint = utils.Checkpoint(args, self.model, experiment_name)
         if args.load_checkpoint:
             # 加载上一次的模型，优化器和学习率调整器
@@ -47,6 +52,7 @@ class Trainer():
             last_epoch = self.scheduler.last_epoch
             checkpoint = torch.load(os.path.join(self.checkpoint.checkpoint_dir, "model/final.pth"))
             self.model.load_state_dict(checkpoint)
+
     def train_and_test(self):
         epoch = self.scheduler.last_epoch + 1
         lr = self.scheduler.get_last_lr()[0]
@@ -65,6 +71,7 @@ class Trainer():
                 lr_list = []
                 hr_list = []
                 for n in [16, 8, 4]:
+                    print(1)
                     # for n in [64, 16, 4]:
                     lr_list.append(utils.crop_img(lr, lr_size, n))
                     hr_list.append((utils.crop_img(hr, hr_size, n)))
