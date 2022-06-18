@@ -22,8 +22,8 @@ parser.add_argument('--noise', type=str, default='.',
 parser.add_argument('--n_colors', type=int, default=3,
                     help='number of color channels to use')
 # model setting
-# parser.add_argument("--model_name", type=str, default="ESPCN", help="")
-parser.add_argument("--model_name", type=str, default="GradualSR", help="")
+parser.add_argument("--model_name", type=str, default="ESPCN", help="")
+# parser.add_argument("--model_name", type=str, default="GradualSR", help="")
 # parser.add_argument("--model_name", type=str, default="SRCNN", help="")
 parser.add_argument("--is_PMG", type=lambda x: x.lower() == 'true', default=True, help="")
 parser.add_argument('--n_resgroups', type=int, default=4,
