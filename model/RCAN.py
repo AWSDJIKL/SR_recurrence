@@ -13,6 +13,8 @@ from model import common
 
 
 def make_model(args):
+    print("prepare model")
+    print("RCAN")
     return RCAN(args)
 
 

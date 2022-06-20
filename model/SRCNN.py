@@ -10,6 +10,8 @@ import torch.nn as nn
 
 
 def make_model(args):
+    print("prepare model")
+    print("SRCNN")
     return SRCNN(args)
 
 

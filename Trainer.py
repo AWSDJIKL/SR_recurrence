@@ -39,11 +39,11 @@ class Trainer():
         self.optimizer = self.make_optimizer()
         self.scheduler = self.make_scheduler()
         if self.is_PMG and model.support_PMG:
-            experiment_name = model.__class__.__name__ + "_PMG_" + loss.loss_name
+            experiment_name = "x{}_{}_PMG_{}".format(args.scale, model.__class__.__name__, loss.loss_name)
         else:
             args.is_PMG = False
             self.is_PMG = False
-            experiment_name = model.__class__.__name__ + "_" + loss.loss_name
+            experiment_name = "x{}_{}_{}".format(args.scale, model.__class__.__name__, loss.loss_name)
         self.checkpoint = utils.Checkpoint(args, self.model, experiment_name)
         if args.load_checkpoint:
             # 加载上一次的模型，优化器和学习率调整器
@@ -111,7 +111,9 @@ class Trainer():
                     sr = self.model(lr)
                 # print(sr)
                 sr = utils.quantize(sr, self.args.rgb_range)
-                self.save_sr_result([lr, hr, sr], img_name[0], epoch, self.checkpoint.checkpoint_dir)
+                #
+                if self.args.save_epoch_result:
+                    self.save_sr_result([lr, hr, sr], img_name[0], epoch, self.checkpoint.checkpoint_dir)
                 psnr = utils.calculate_psnr(sr, hr, self.args.scale, self.args.rgb_range)
                 epoch_psnr += psnr
         epoch_psnr /= len(self.test_loader)
