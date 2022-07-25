@@ -26,7 +26,7 @@ parser.add_argument("--model_name", type=str, default="FSRCNN", help="")
 # parser.add_argument("--model_name", type=str, default="MSRN_OLD_PMG", help="")
 # parser.add_argument("--model_name", type=str, default="MSRN_PMG", help="")
 parser.add_argument("--is_PMG", type=lambda x: x.lower() == 'true', default=True, help="")
-parser.add_argument("--is_crop", type=lambda x: x.lower() == 'true', default=False, help="")
+parser.add_argument("--is_crop", type=lambda x: x.lower() == 'true', default=True, help="")
 
 parser.add_argument('--n_resgroups', type=int, default=4,
                     help='number of residual groups')

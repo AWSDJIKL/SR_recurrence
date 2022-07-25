@@ -91,7 +91,7 @@ class RCAN_PMG(nn.Module):
         reduction = args.reduction
         scale = args.scale
         act = nn.ReLU(True)
-
+        self.pmg_step = n_resgroups // 4
         # RGB mean for DIV2K
         rgb_mean = (0.4488, 0.4371, 0.4040)
         rgb_std = (1.0, 1.0, 1.0)
@@ -124,8 +124,12 @@ class RCAN_PMG(nn.Module):
         x = self.sub_mean(x)
         x = self.head(x)
         res = x
-        for i in range(step + 1):
-            res = self.body[i](res)
+        if step < 3:
+            for i in range((step + 1) * self.pmg_step):
+                res = self.body[i](res)
+        else:
+            for i in range(len(self.body)):
+                res = self.body[i](res)
         res += x
 
         x = self.tail(res)

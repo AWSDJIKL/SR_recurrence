@@ -60,3 +60,6 @@ nohup python main.py --model_name MSRN_PMG --scale 8 --is_PMG True --loss_name 1
 #python main.py --model_name RCAN --scale 4 --n_resgroups 10 --n_resblocks 20
 #python main.py --model_name RCAN --scale 8 --n_resgroups 10 --n_resblocks 20
 
+nohup python main.py --model_name RCAN --scale 4 --loss_name 1_L1 --n_resgroups 10 --n_resblocks 20 --device cuda:0 >log/x4_RCAN_PMG_PMG_1_L1 2>&1 &
+
+nohup python main.py --model_name RCAN_PMG --scale 4 --is_PMG True --is_crop True --loss_name 1_L1 --n_resgroups 10 --n_resblocks 20 --device cuda:1 >log/x4_RCAN_PMG_PMG_1_L1 2>&1 &
