@@ -11,7 +11,7 @@ parser = argparse.ArgumentParser(description='Super Resolution framework')
 # dataset setting
 parser.add_argument("--train_set", type=str, default="DIV2K", help="train set name")
 parser.add_argument("--test_set", type=str, default="Set5", help="test set name")
-parser.add_argument("--scale", type=int, default=4, help="")
+parser.add_argument("--scale", type=int, default=16, help="")
 parser.add_argument("--data_type", type=str, default="npy", help="")
 parser.add_argument("--batch_size", type=int, default=4, help="")
 parser.add_argument("--patch_size", type=int, default=384, help="")
@@ -22,10 +22,12 @@ parser.add_argument('--noise', type=str, default='.',
 parser.add_argument('--n_colors', type=int, default=3,
                     help='number of color channels to use')
 # model setting
-# parser.add_argument("--model_name", type=str, default="ESPCN", help="")
-parser.add_argument("--model_name", type=str, default="MSRN", help="")
-# parser.add_argument("--model_name", type=str, default="SRCNN", help="")
+parser.add_argument("--model_name", type=str, default="FSRCNN", help="")
+# parser.add_argument("--model_name", type=str, default="MSRN_OLD_PMG", help="")
+# parser.add_argument("--model_name", type=str, default="MSRN_PMG", help="")
 parser.add_argument("--is_PMG", type=lambda x: x.lower() == 'true', default=True, help="")
+parser.add_argument("--is_crop", type=lambda x: x.lower() == 'true', default=False, help="")
+
 parser.add_argument('--n_resgroups', type=int, default=4,
                     help='number of residual groups')
 parser.add_argument('--n_resblocks', type=int, default=4,

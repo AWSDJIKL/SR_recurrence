@@ -181,7 +181,7 @@ def calculate_ssim(img1, img2, kernel_size=11):
         # 仅计算平均数
         kernel = torch.Tensor([[
             [[1 for i in range(kernel_size)] for i in range(kernel_size)]
-            for i in range(channel)] for i in range(channel)]).cuda()
+            for i in range(channel)] for i in range(channel)]).to("cuda:0")
         kernel /= kernel.sum()
         return kernel
 
@@ -198,11 +198,13 @@ def calculate_ssim(img1, img2, kernel_size=11):
     l = max - min
     c1 = (k1 * l) ** 2
     c2 = (k2 * l) ** 2
-    (channel, h, w) = img1.size()
+    (batch_size, channel, h, w) = img1.size()
     kernel = create_kernel(kernel_size, channel)
     # print(kernel)
-    img1 = img1.unsqueeze(0)
-    img2 = img2.unsqueeze(0)
+    # img1 = img1.unsqueeze(0)
+    # img2 = img2.unsqueeze(0)
+    img1 = img1.to("cuda:0")
+    img2 = img2.to("cuda:0")
     # 计算均值
     mean1 = F.conv2d(img1, weight=kernel, stride=1, padding=0)
     mean2 = F.conv2d(img2, weight=kernel, stride=1, padding=0)
@@ -215,7 +217,7 @@ def calculate_ssim(img1, img2, kernel_size=11):
     covariance = F.conv2d(img1 * img2, weight=kernel, stride=1, padding=0) - (mean1 * mean2)
 
     ssim = torch.mean(((2 * mean1 * mean2 + c1) * (2 * covariance + c2)) / (
-            (mean1 ** 2 + mean2 ** 2 + c1) * (variance1 + variance2 + c2)))
+            (mean1 ** 2 + mean2 ** 2 + c1) * (variance1 + variance2 + c2))).item()
     return ssim
 
 

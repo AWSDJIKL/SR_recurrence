@@ -8,20 +8,20 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-# log = np.load("img_test/test_model/MSARN_1_L1/log_dict.npy",allow_pickle=True)
-# log_PMG = np.load("img_test/test_model/MSARN_PMG_1_L1/log_dict.npy",allow_pickle=True)
-#
-# psnr=log.item()["psnr_list"]
-# psnr_PMG=log_PMG.item()["psnr_list"]
-#
-# plt.figure(figsize=(10, 5))
-# plt.plot(psnr, 'b', label='Normal')
-# plt.plot(psnr_PMG, 'r', label='Use progressive training')
-# plt.legend()
-# plt.grid()
-# plt.savefig('PSNR.png', dpi=400)
-# plt.close()
+log = np.load("checkpoint/x4_MSRN_OLD_PMG_OLD_PMG_1_L1/log_dict.npy",allow_pickle=True)
+log_PMG = np.load("checkpoint/x4_MSRN_PMG_PMG_1_L1/log_dict.npy",allow_pickle=True)
 
-x = 121
-x = (x // 4) * 4
-print(x)
+psnr=log.item()["psnr_list"]
+psnr_PMG=log_PMG.item()["psnr_list"]
+
+plt.figure(figsize=(10, 5))
+plt.plot(psnr, 'b', label='Progressive')
+plt.plot(psnr_PMG, 'r', label='SRPMG')
+plt.legend()
+plt.grid()
+plt.savefig('PSNR_curve.png', dpi=400)
+plt.close()
+
+# x = 121
+# x = (x // 4) * 4
+# print(x)

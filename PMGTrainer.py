@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 '''
-训练器
+
 '''
-# @Time    : 2021/12/18 15:50
+# @Time    : 2022/6/25 15:26
 # @Author  : LINYANZHEN
-# @File    : Trainer.py
+# @File    : PMGTrainer.py
 import shutil
 
 import imageio
@@ -19,14 +19,13 @@ import torch.optim.lr_scheduler as lrs
 import utils
 
 
-class Trainer():
-    def __init__(self, args, model, loader: data.Data, loss):
+class PMGTrainer():
+    def __init__(self, args, model, loader: data.PMGData, loss):
         self.args = args
         self.train_loader = loader.train_loader
         self.test_loader = loader.test_loader
         self.model = model
         self.is_PMG = args.is_PMG
-        self.is_crop = args.is_crop
         self.loss = loss
         # 是否使用半精度
         self.half_precision = args.half_precision
@@ -40,10 +39,7 @@ class Trainer():
         self.optimizer = self.make_optimizer()
         self.scheduler = self.make_scheduler()
         if self.is_PMG and model.support_PMG:
-            if self.is_crop:
-                experiment_name = "x{}_{}_PMG_{}".format(args.scale, model.__class__.__name__, loss.loss_name)
-            else:
-                experiment_name = "x{}_{}_PMG_no_crop_{}".format(args.scale, model.__class__.__name__, loss.loss_name)
+            experiment_name = "x{}_{}_OLD_PMG_{}".format(args.scale, model.__class__.__name__, loss.loss_name)
         else:
             args.is_PMG = False
             self.is_PMG = False
@@ -65,58 +61,25 @@ class Trainer():
         self.model.train()
         epoch_loss = 0
         epoch_psnr = 0
-        progress = tqdm.tqdm(self.train_loader, total=len(self.train_loader))
-        for (lr, hr, img_name) in progress:
-            lr = self.prepare(lr)
-            hr = self.prepare(hr)
-            if self.is_PMG:
-                lr_size = self.args.patch_size // self.args.scale
-                hr_size = self.args.patch_size
-                lr_list = []
-                hr_list = []
-                for n in [16, 8, 4]:
-                    # print(1)
-                    # for n in [64, 16, 4]:
-                    if self.is_crop:
-                        lr_list.append(utils.crop_img(lr, lr_size, n))
-                        hr_list.append((utils.crop_img(hr, hr_size, n)))
-                    else:
-                        lr_list.append(lr)
-                        hr_list.append(hr)
-                    # jigsaws_lr, jigsaws_hr = utils.jigsaw_generator(lr, hr, lr_size, hr_size, n)
-                    # lr_list.append(jigsaws_lr)
-                    # hr_list.append(jigsaws_hr)
-                lr_list.append(lr)
-                hr_list.append(hr)
-                for i, lr_rate in zip(range(4), [1, 1, 1, 2]):
-                    # print(lr_list[i].device)
-                    # print(next(self.model.parameters()).device)
-                    self.optimizer.zero_grad()
-                    sr = self.model(lr_list[i], i)
-                    # loss = self.loss(sr, hr_list[i], i)
-                    loss = self.loss(sr, hr_list[i]) * lr_rate
-                    loss.backward()
-                    self.optimizer.step()
-                    epoch_loss += loss.item() / 4
-            else:
+        # progress = tqdm.tqdm(range(len(self.train_loader[0])), total=len(self.train_loader[0]))
+        for i in range(2):
+            progress = tqdm.tqdm(self.train_loader[i], total=len(self.train_loader[i]))
+            for (lr, hr, img_name) in progress:
+                lr = self.prepare(lr)
+                hr = self.prepare(hr)
                 self.optimizer.zero_grad()
-                sr = self.model(lr)
-                # self.save_sr_result([lr, hr, sr], img_name[0], epoch, self.checkpoint.checkpoint_dir)
-                # return
+                sr = self.model(lr, i)
                 loss = self.loss(sr, hr)
                 loss.backward()
                 self.optimizer.step()
                 epoch_loss += loss.item()
-        epoch_loss /= len(self.train_loader)
+        epoch_loss /= len(self.train_loader[0])
         with torch.no_grad():
             self.model.eval()
             for (lr, hr, img_name) in self.test_loader:
                 lr = self.prepare(lr)
                 hr = self.prepare(hr)
-                if self.is_PMG:
-                    sr = self.model(lr, 3)
-                else:
-                    sr = self.model(lr)
+                sr = self.model(lr)
                 # print(sr)
                 sr = utils.quantize(sr, self.args.rgb_range)
                 #

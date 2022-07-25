@@ -32,7 +32,7 @@ class Benchmark(srdata.SRData):
             dataset_size = 14
         elif self.args.test_set == "BSD500":
             dataset_size = 500
-        elif self.args.test_set == "Urban100":
+        elif self.args.test_set in ["BSD100", "Urban100"]:
             dataset_size = 100
 
         for i in range(dataset_size):
@@ -42,15 +42,18 @@ class Benchmark(srdata.SRData):
         return lr_list, hr_list
 
     def _set_filesystem(self):
-        if self.args.test_set == "Set5":
-            self.lr_dir = "dataset/Set5/x{}/lr".format(self.args.scale)
-            self.hr_dir = "dataset/Set5/x{}/hr".format(self.args.scale)
-        elif self.args.test_set == "Set14":
-            self.lr_dir = "dataset/Set14/x{}/lr".format(self.args.scale)
-            self.hr_dir = "dataset/Set14/x{}/hr".format(self.args.scale)
-        elif self.args.test_set == "BSD500":
-            self.lr_dir = "dataset/BSD500/x{}/lr".format(self.args.scale)
-            self.hr_dir = "dataset/BSD500/x{}/hr".format(self.args.scale)
-        elif self.args.test_set == "Urban100":
-            self.lr_dir = "dataset/Urban100_SR/x{}/lr".format(self.args.scale)
-            self.hr_dir = "dataset/Urban100_SR/x{}/hr".format(self.args.scale)
+        if self.args.test_set in ["Set5", "Set14", "BSD100", "Urban100"]:
+            self.lr_dir = "dataset/{}/x{}/lr".format(self.args.test_set, self.args.scale)
+            self.hr_dir = "dataset/{}/x{}/hr".format(self.args.test_set, self.args.scale)
+        # if self.args.test_set == "Set5":
+        #     self.lr_dir = "dataset/Set5/x{}/lr".format(self.args.scale)
+        #     self.hr_dir = "dataset/Set5/x{}/hr".format(self.args.scale)
+        # elif self.args.test_set == "Set14":
+        #     self.lr_dir = "dataset/Set14/x{}/lr".format(self.args.scale)
+        #     self.hr_dir = "dataset/Set14/x{}/hr".format(self.args.scale)
+        # elif self.args.test_set == "BSD500":
+        #     self.lr_dir = "dataset/BSD500/x{}/lr".format(self.args.scale)
+        #     self.hr_dir = "dataset/BSD500/x{}/hr".format(self.args.scale)
+        # elif self.args.test_set == "Urban100":
+        #     self.lr_dir = "dataset/Urban100_SR/x{}/lr".format(self.args.scale)
+        #     self.hr_dir = "dataset/Urban100_SR/x{}/hr".format(self.args.scale)

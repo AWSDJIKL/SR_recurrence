@@ -2,9 +2,9 @@
 '''
 
 '''
-# @Time    : 2021/12/19 23:14
+# @Time    : 2022/6/27 22:01
 # @Author  : LINYANZHEN
-# @File    : main.py
+# @File    : PMG_main.py
 import random
 
 import numpy as np
@@ -28,8 +28,8 @@ def setup_seed(seed):
 if __name__ == '__main__':
     setup_seed(args.seed)
     m = model.get_model(args.model_name, args)
-    loader = data.Data(args)
+    loader = data.PMGData(args)
     loss = loss.Loss(args)
-    trainer = Trainer.Trainer(args, m, loader, loss)
+    trainer = PMGTrainer.PMGTrainer(args, m, loader, loss)
     while not trainer.is_finsh():
         trainer.train_and_test()
