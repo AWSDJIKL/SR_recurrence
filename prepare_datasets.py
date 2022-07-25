@@ -19,17 +19,17 @@ import imageio
 import tqdm
 
 link_list = {
-    # "Set5": "https://uofi.box.com/shared/static/kfahv87nfe8ax910l85dksyl2q212voc.zip",
-    # "Set14": "https://uofi.box.com/shared/static/igsnfieh4lz68l926l8xbklwsnnk8we9.zip",
-    # "BSD500": "http://www.eecs.berkeley.edu/Research/Projects/CS/vision/grouping/BSR/BSR_bsds500.tgz",
+    "Set5": "https://uofi.box.com/shared/static/kfahv87nfe8ax910l85dksyl2q212voc.zip",
+    "Set14": "https://uofi.box.com/shared/static/igsnfieh4lz68l926l8xbklwsnnk8we9.zip",
     "BSD100": "https://uofi.box.com/shared/static/qgctsplb8txrksm9to9x01zfa4m61ngq.zip",
-    # "Urban100": "https://uofi.box.com/shared/static/65upg43jjd0a4cwsiqgl6o6ixube6klm.zip",
-    # "DIV2K_train_HR": "http://data.vision.ee.ethz.ch/cvl/DIV2K/DIV2K_train_HR.zip",
+    "Urban100": "https://uofi.box.com/shared/static/65upg43jjd0a4cwsiqgl6o6ixube6klm.zip",
+    "DIV2K_train_HR": "http://data.vision.ee.ethz.ch/cvl/DIV2K/DIV2K_train_HR.zip",
     # "DIV2K_train_LR": "http://data.vision.ee.ethz.ch/cvl/DIV2K/DIV2K_train_LR_bicubic_X4.zip",
     # "DIV2K_valid": "http://data.vision.ee.ethz.ch/cvl/DIV2K/DIV2K_valid_HR.zip",
     # "ms_coco_train": "http://images.cocodataset.org/zips/train2014.zip",
     # "ms_coco_val": "http://images.cocodataset.org/zips/val2014.zip",
     # "ms_coco_test": "http://images.cocodataset.org/zips/test2014.zip",
+    # "BSD500": "http://www.eecs.berkeley.edu/Research/Projects/CS/vision/grouping/BSR/BSR_bsds500.tgz",
 }
 
 
@@ -165,8 +165,7 @@ if __name__ == '__main__':
 
     for dataset in ["Set5", "Set14", "BSD100", "Urban100", "DIV2K_train_HR"]:
         print(dataset)
-        # for scale in [4]:
-        for scale in [2, 3, 4, 8, 16]:
+        for scale in [4, 8]:
             hr_list = get_hr_list(dataset)
             prepare_npy(hr_list, scale, "dataset/{}/x{}".format(dataset, scale))
     print("数据集准备完成")
