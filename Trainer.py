@@ -41,7 +41,14 @@ class Trainer():
         self.scheduler = self.make_scheduler()
         if self.is_PMG and model.support_PMG:
             if self.is_crop:
-                experiment_name = "x{}_{}_PMG_{}".format(args.scale, model.__class__.__name__, loss.loss_name)
+                crop_piece = "_".join(map(lambda x: str(x), self.args.crop_piece))
+                if self.args.is_stride:
+                    stride = "_".join(map(lambda x: str(x), self.args.stride))
+                    experiment_name = "x{}_{}_PMG_{}_{}_{}".format(args.scale, model.__class__.__name__, crop_piece,
+                                                                   stride, loss.loss_name)
+                else:
+                    experiment_name = "x{}_{}_PMG_{}_{}".format(args.scale, model.__class__.__name__, crop_piece,
+                                                                loss.loss_name)
             else:
                 experiment_name = "x{}_{}_PMG_no_crop_{}".format(args.scale, model.__class__.__name__, loss.loss_name)
         else:
@@ -74,12 +81,14 @@ class Trainer():
                 hr_size = self.args.patch_size
                 lr_list = []
                 hr_list = []
-                for n in [16, 8, 4]:
-                    # print(1)
-                    # for n in [64, 16, 4]:
+                for n, stride in zip(self.args.crop_piece, self.args.stride):
                     if self.is_crop:
-                        lr_list.append(utils.crop_img(lr, lr_size, n))
-                        hr_list.append((utils.crop_img(hr, hr_size, n)))
+                        if self.args.is_stride:
+                            lr_list.append(utils.crop_img(lr, lr_size, n, stride // self.args.scale))
+                            hr_list.append((utils.crop_img(hr, hr_size, n, stride)))
+                        else:
+                            lr_list.append(utils.crop_img(lr, lr_size, n))
+                            hr_list.append((utils.crop_img(hr, hr_size, n)))
                     else:
                         lr_list.append(lr)
                         hr_list.append(hr)
@@ -88,16 +97,18 @@ class Trainer():
                     # hr_list.append(jigsaws_hr)
                 lr_list.append(lr)
                 hr_list.append(hr)
-                for i, lr_rate in zip(range(4), [1, 1, 1, 2]):
+                for i in range(len(self.args.crop_piece)):
                     # print(lr_list[i].device)
                     # print(next(self.model.parameters()).device)
                     self.optimizer.zero_grad()
                     sr = self.model(lr_list[i], i)
                     # loss = self.loss(sr, hr_list[i], i)
-                    loss = self.loss(sr, hr_list[i]) * lr_rate
+                    loss = self.loss(sr, hr_list[i])
+                    if i == len(self.args.crop_piece) - 1:
+                        loss = loss * 2
                     loss.backward()
                     self.optimizer.step()
-                    epoch_loss += loss.item() / 4
+                    epoch_loss += loss.item() / len(self.args.crop_piece)
             else:
                 self.optimizer.zero_grad()
                 sr = self.model(lr)
@@ -113,10 +124,7 @@ class Trainer():
             for (lr, hr, img_name) in self.test_loader:
                 lr = self.prepare(lr)
                 hr = self.prepare(hr)
-                if self.is_PMG:
-                    sr = self.model(lr, 3)
-                else:
-                    sr = self.model(lr)
+                sr = self.model(lr)
                 # print(sr)
                 sr = utils.quantize(sr, self.args.rgb_range)
                 #

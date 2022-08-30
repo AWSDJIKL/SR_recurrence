@@ -7,21 +7,23 @@
 # @File    : test.py
 import matplotlib.pyplot as plt
 import numpy as np
+import torchsummary
+import model.MSRN
+from option import args
+import torch
+import torch.nn.functional as F
 
-log = np.load("checkpoint/x4_MSRN_OLD_PMG_OLD_PMG_1_L1/log_dict.npy",allow_pickle=True)
-log_PMG = np.load("checkpoint/x4_MSRN_PMG_PMG_1_L1/log_dict.npy",allow_pickle=True)
+k = 32
+p = 0
+s = 8
 
-psnr=log.item()["psnr_list"]
-psnr_PMG=log_PMG.item()["psnr_list"]
+tensor = torch.range(0, 10 * 3 * 512 * 512 - 1).view(10, 3, 512, 512)
+# print(tensor)
 
-plt.figure(figsize=(10, 5))
-plt.plot(psnr, 'b', label='Progressive')
-plt.plot(psnr_PMG, 'r', label='SRPMG')
-plt.legend()
-plt.grid()
-plt.savefig('PSNR_curve.png', dpi=400)
-plt.close()
-
-# x = 121
-# x = (x // 4) * 4
-# print(x)
+unfold = F.unfold(tensor, kernel_size=(k, k), stride=s, padding=p).permute(0, 2, 1)
+b, c, l = unfold.size()
+b = (b * c * l) // (3 * k * k)
+print(b)
+unfold = unfold.reshape(b, 3, k, k)
+print(unfold)
+print(unfold.shape)

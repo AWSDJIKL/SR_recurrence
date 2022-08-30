@@ -58,7 +58,7 @@ class MSRN_PMG(nn.Module):
         act = nn.ReLU(True)
 
         self.n_blocks = n_blocks
-
+        self.piece = len(args.crop_piece) + 1
         # RGB mean for DIV2K
         rgb_mean = (0.4488, 0.4371, 0.4040)
         rgb_std = (1.0, 1.0, 1.0)
@@ -74,9 +74,8 @@ class MSRN_PMG(nn.Module):
                 MSRB(n_feats=n_feats))
 
         channel_adaptive = [
-            nn.Conv2d(n_feats * (self.n_blocks // 4 + 1), n_feats * (self.n_blocks + 1), 1, padding=0, stride=1),
-            nn.Conv2d(n_feats * ((self.n_blocks // 4) * 2 + 1), n_feats * (self.n_blocks + 1), 1, padding=0, stride=1),
-            nn.Conv2d(n_feats * ((self.n_blocks // 4) * 3 + 1), n_feats * (self.n_blocks + 1), 1, padding=0, stride=1),
+            nn.Conv2d(n_feats * ((self.n_blocks // 4) * i + 1), n_feats * (self.n_blocks + 1), 1, padding=0, stride=1)
+            for i in range(1, self.piece)
         ]
 
         # define tail module
@@ -93,20 +92,26 @@ class MSRN_PMG(nn.Module):
         self.channel_adaptive = nn.Sequential(*channel_adaptive)
         self.tail = nn.Sequential(*modules_tail)
 
-    def forward(self, x, step=3):
+    def forward(self, x, step=None):
         x = self.sub_mean(x)
         x = self.head(x)
         res = x
 
         MSRB_out = []
-        # 将8个block分为4个部分
-        for i in range((step + 1) * 2):
-            x = self.body[i](x)
-            MSRB_out.append(x)
-        MSRB_out.append(res)
-        res = torch.cat(MSRB_out, 1)
-        if step < 3:
-            res = self.channel_adaptive[step](res)
+        if step:
+            for i in range((step + 1) * 2):
+                x = self.body[i](x)
+                MSRB_out.append(x)
+            MSRB_out.append(res)
+            res = torch.cat(MSRB_out, 1)
+            if step < self.piece:
+                res = self.channel_adaptive[step](res)
+        else:
+            for i in range(self.n_blocks):
+                x = self.body[i](x)
+                MSRB_out.append(x)
+            MSRB_out.append(res)
+            res = torch.cat(MSRB_out, 1)
         x = self.tail(res)
         x = self.add_mean(x)
         return x

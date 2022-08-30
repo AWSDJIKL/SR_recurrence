@@ -229,18 +229,25 @@ def save_img(tensor, save_dir, name):
     imageio.imsave(os.path.join(save_dir, "{}.png".format(name)), ndarr)
 
 
-def crop_img(img, img_size, n):
+def crop_img(img, img_size, n, stride=None, padding=0):
     # print(img.size())
-    patch_size = img_size // n
-    img_list = []
-    for i in range(n):
-        for j in range(n):
-            img_list.append(img[..., i * patch_size:(i + 1) * patch_size,
-                            j * patch_size:(j + 1) * patch_size])
-
-    # random.shuffle(img_list)
-    out = torch.cat(img_list, 0)
-    # print(out.size())
+    k = img_size // n
+    if not stride:
+        stride = k
+    unfold = F.unfold(img, kernel_size=(k, k), stride=stride, padding=padding).permute(0, 2, 1)
+    b, c, l = unfold.size()
+    b = (b * c * l) // (3 * k * k)
+    out = unfold.reshape(b, 3, k, k)
+    # patch_size = img_size // n
+    # img_list = []
+    # for i in range(n):
+    #     for j in range(n):
+    #         img_list.append(img[..., i * patch_size:(i + 1) * patch_size,
+    #                         j * patch_size:(j + 1) * patch_size])
+    #
+    # # random.shuffle(img_list)
+    # out = torch.cat(img_list, 0)
+    # # print(out.size())
     return out
 
 

@@ -127,6 +127,7 @@ class RCAN_PMG(nn.Module):
         if step < 3:
             for i in range((step + 1) * self.pmg_step):
                 res = self.body[i](res)
+            res = self.body[-1](res)
         else:
             for i in range(len(self.body)):
                 res = self.body[i](res)
