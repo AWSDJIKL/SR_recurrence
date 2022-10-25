@@ -58,7 +58,7 @@ class Trainer():
 
     def train_and_test(self):
         epoch = self.scheduler.last_epoch + 1
-        learn_percent = 0.5 + 0.1 * (epoch // 200)
+        learn_percent = 0.6 + 0.1 * (epoch // 200)
         lr = self.scheduler.get_last_lr()[0]
         self.checkpoint.write_log(
             "[Epoch {}/{}]\tLearning rate: {}\tLearning percent: {}%".format(epoch, self.args.epoch, lr,
