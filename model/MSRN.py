@@ -30,7 +30,6 @@ class MSRB(nn.Module):
         self.conv_5_2 = conv(n_feats * 2, n_feats * 2, kernel_size_2)
         self.confusion = nn.Conv2d(n_feats * 4, n_feats, 1, padding=0, stride=1)
         self.relu = nn.ReLU(inplace=True)
-
     def forward(self, x):
         input_1 = x
         output_3_1 = self.relu(self.conv_3_1(input_1))

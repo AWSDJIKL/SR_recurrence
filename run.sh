@@ -49,7 +49,6 @@ nohup python PMG_main.py --model_name MSRN_OLD_PMG --scale 8 --is_PMG True --los
 nohup python PMG_main.py --model_name MSRN_OLD_PMG --scale 16 --is_PMG True --loss_name 1_L1 --device cuda:0 >log/x16_MSRN_OLD_PMG_PMG_1_L1 2>&1 &
 #3651941
 
-
 nohup python main.py --model_name MSRN_PMG --scale 4 --is_PMG True --loss_name 1_L1 --device cuda:0 >log/x4_MSRN_PMG_PMG_1_L1 2>&1 &
 #127392
 nohup python main.py --model_name MSRN_PMG --scale 8 --is_PMG True --loss_name 1_L1 --device cuda:1 >log/x8_MSRN_PMG_PMG_1_L1 2>&1 &
@@ -63,3 +62,45 @@ nohup python main.py --model_name MSRN_PMG --scale 8 --is_PMG True --loss_name 1
 nohup python main.py --model_name RCAN --scale 4 --loss_name 1_L1 --n_resgroups 10 --n_resblocks 20 --device cuda:0 >log/x4_RCAN_1_L1 2>&1 &
 
 nohup python main.py --model_name RCAN_PMG --scale 4 --is_PMG True --is_crop True --loss_name 1_L1 --n_resgroups 10 --n_resblocks 20 --device cuda:1 >log/x4_RCAN_PMG_PMG_1_L1 2>&1 &
+
+#划分N个stage的实验，N=1,2,3,4，对应crop大小[不使用PMG，[16]，[16,8],[16,8,4]]
+nohup python main.py --model_name MSRN_PMG --scale 4 --is_PMG False --loss_name 1_L1 --device cuda:0 >log/x4_MSRN_PMG_1_L1_1 2>&1 &
+#3532397
+nohup python main.py --model_name MSRN_PMG --scale 4 --is_PMG True --crop_piece 16 --stride 0.5 --loss_name 1_L1 --device cuda:0 >log/x4_MSRN_PMG_PMG_16_1_L1 2>&1 &
+#3532658
+nohup python main.py --model_name MSRN_PMG --scale 4 --is_PMG True --crop_piece 16 8 --stride 0.5 --loss_name 1_L1 --device cuda:1 >log/x4_MSRN_PMG_PMG_16_8_1_L1 2>&1 &
+#3532760
+nohup python main.py --model_name MSRN_PMG --scale 4 --is_PMG True --crop_piece 16 8 4 --stride 0.5 --loss_name 1_L1 --device cuda:1 >log/x4_MSRN_PMG_PMG_16_8_4_1_L1 2>&1 &
+#3532860
+
+#划分大小的实验（统一使用4个阶段）
+nohup python main.py --model_name MSRN_PMG --scale 4 --is_PMG True --patch_size 384 --crop_piece 16 8 4 1 --stride 0.5 --loss_name 1_L1 --device cuda:0 >log/x4_MSRN_PMG_PMG_16_8_4_1_L1 2>&1 &
+#1049153
+nohup python main.py --model_name MSRN_PMG --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 4 8 16 --stride 0.5 --loss_name 1_L1 --device cuda:1 >log/x4_MSRN_PMG_PMG_1_4_8_16_L1 2>&1 &
+#1049236
+nohup python main.py --model_name MSRN_PMG --scale 4 --is_PMG True --patch_size 384 --crop_piece 12 6 3 1 --stride 0.5 --loss_name 1_L1 --device cuda:0 >log/x4_MSRN_PMG_PMG_12_6_3_1_L1 2>&1 &
+#1049311
+nohup python main.py --model_name MSRN_PMG --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 3 6 12 --stride 0.5 --loss_name 1_L1 --device cuda:1 >log/x4_MSRN_PMG_PMG_1_3_6_12_L1 2>&1 &
+#1049364
+
+#补充stride=1时结果是否更优
+nohup python main.py --model_name MSRN_PMG --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 4 8 16 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_MSRN_PMG_PMG_1_1_4_8_16_L1 2>&1 &
+#2215914
+nohup python main.py --model_name MSRN_PMG --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 3 6 12 --stride 1 --loss_name 1_L1 --device cuda:1 >log/x4_MSRN_PMG_PMG_1_1_3_6_12_L1 2>&1 &
+#2215993
+#另外再实验2倍步进和3倍步进是否更优
+nohup python main.py --model_name MSRN_PMG --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 3 6 12 --stride 2 --loss_name 1_L1 --device cuda:0 >log/x4_MSRN_PMG_PMG_2_1_3_6_12_L1 2>&1 &
+#2216046
+nohup python main.py --model_name MSRN_PMG --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 3 6 12 --stride 3 --loss_name 1_L1 --device cuda:1 >log/x4_MSRN_PMG_PMG_2_1_3_6_12_L1 2>&1 &
+#2216123
+
+#实验meta-learning
+nohup python meta_main.py --model_name MSRN_PMG --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 4 8 16 --stride 2 --loss_name 1_spl --device cuda:0 >log/x4_meta_MSRN_PMG_PMG_1_1_4_8_16_spl 2>&1 &
+#5482
+nohup python meta_main.py --model_name MSRN_PMG --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 3 6 12 --stride 2 --loss_name 1_spl --device cuda:1 >log/x4_meta_MSRN_PMG_PMG_1_1_3_6_12_spl 2>&1 &
+#5552
+
+nohup python main.py --model_name MSRN_PMG --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 4 8 16 --stride 2 --loss_name 1_L1 --device cuda:0 >log/x4_MSRN_PMG_PMG_1_1_4_8_16_L1 2>&1 &
+#5655
+nohup python main.py --model_name MSRN_PMG --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 4 8 16 --stride 3 --loss_name 1_L1 --device cuda:1 >log/x4_MSRN_PMG_PMG_1_1_4_8_16_L1 2>&1 &
+#5732

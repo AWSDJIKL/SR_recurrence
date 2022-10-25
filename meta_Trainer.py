@@ -2,10 +2,11 @@
 '''
 
 '''
-# @Time    : 2022/6/25 15:26
+# @Time    : 2022/9/27 20:35
 # @Author  : LINYANZHEN
-# @File    : PMGTrainer.py
+# @File    : meta_Trainer.py
 import shutil
+from datetime import datetime
 
 import imageio
 import torch
@@ -17,15 +18,17 @@ import os
 import torch.optim as optim
 import torch.optim.lr_scheduler as lrs
 import utils
+import time
 
 
-class PMGTrainer():
-    def __init__(self, args, model, loader: data.ProgressiveData, loss):
+class Trainer():
+    def __init__(self, args, model, loader: data.Data, loss):
         self.args = args
         self.train_loader = loader.train_loader
         self.test_loader = loader.test_loader
         self.model = model
         self.is_PMG = args.is_PMG
+        self.is_crop = args.is_crop
         self.loss = loss
         # 是否使用半精度
         self.half_precision = args.half_precision
@@ -35,15 +38,15 @@ class PMGTrainer():
             self.loss.half()
         self.model.to(self.device)
         self.loss.to(self.device)
-
         self.optimizer = self.make_optimizer()
         self.scheduler = self.make_scheduler()
+        now_time = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
         if self.is_PMG and model.support_PMG:
-            experiment_name = "x{}_{}_OLD_PMG_{}".format(args.scale, model.__class__.__name__, loss.loss_name)
+            pass
         else:
             args.is_PMG = False
             self.is_PMG = False
-            experiment_name = "x{}_{}_{}".format(args.scale, model.__class__.__name__, loss.loss_name)
+        experiment_name = "{}_x{}_{}".format(now_time, args.scale, model.__class__.__name__)
         self.checkpoint = utils.Checkpoint(args, self.model, experiment_name)
         if args.load_checkpoint:
             # 加载上一次的模型，优化器和学习率调整器
@@ -55,25 +58,63 @@ class PMGTrainer():
 
     def train_and_test(self):
         epoch = self.scheduler.last_epoch + 1
+        learn_percent = 0.5 + 0.1 * (epoch // 200)
         lr = self.scheduler.get_last_lr()[0]
-        self.checkpoint.write_log("[Epoch {}/{}]\tLearning rate: {}".format(epoch, self.args.epoch, lr))
+        self.checkpoint.write_log(
+            "[Epoch {}/{}]\tLearning rate: {}\tLearning percent: {}%".format(epoch, self.args.epoch, lr,
+                                                                             learn_percent * 100))
         # 将模型设置为训练模式
         self.model.train()
         epoch_loss = 0
         epoch_psnr = 0
-        # progress = tqdm.tqdm(range(len(self.train_loader[0])), total=len(self.train_loader[0]))
-        for i in range(2):
-            progress = tqdm.tqdm(self.train_loader[i], total=len(self.train_loader[i]))
-            for (lr, hr, img_name) in progress:
-                lr = self.prepare(lr)
-                hr = self.prepare(hr)
+        progress = tqdm.tqdm(self.train_loader, total=len(self.train_loader))
+        for (lr, hr, img_name) in progress:
+            lr = self.prepare(lr)
+            hr = self.prepare(hr)
+            if self.is_PMG:
+                lr_size = self.args.patch_size // self.args.scale
+                hr_size = self.args.patch_size
+                lr_list = []
+                hr_list = []
+                for n in self.args.crop_piece:
+                    if self.is_crop:
+                        if n == 1:
+                            lr_list.append(lr)
+                            hr_list.append(hr)
+                        else:
+                            lr_list.append(utils.crop_img(lr, lr_size, n, self.args.stride))
+                            hr_list.append(
+                                (utils.crop_img(hr, hr_size, n, self.args.stride)))
+                    else:
+                        lr_list.append(lr)
+                        hr_list.append(hr)
+                    # jigsaws_lr, jigsaws_hr = utils.jigsaw_generator(lr, hr, lr_size, hr_size, n)
+                    # lr_list.append(jigsaws_lr)
+                    # hr_list.append(jigsaws_hr)
+                lr_list.append(lr)
+                hr_list.append(hr)
+                for i in range(len(self.args.crop_piece)):
+                    # print(lr_list[i].device)
+                    # print(next(self.model.parameters()).device)
+                    self.optimizer.zero_grad()
+                    sr = self.model(lr_list[i], i)
+                    # loss = self.loss(sr, hr_list[i], i)
+                    loss = self.loss(sr, hr_list[i], learn_percent)
+                    if i == len(self.args.crop_piece) - 1:
+                        loss = loss * 2
+                    loss.backward()
+                    self.optimizer.step()
+                    epoch_loss += loss.item() / len(self.args.crop_piece)
+            else:
                 self.optimizer.zero_grad()
-                sr = self.model(lr, i)
-                loss = self.loss(sr, hr)
+                sr = self.model(lr)
+                # self.save_sr_result([lr, hr, sr], img_name[0], epoch, self.checkpoint.checkpoint_dir)
+                # return
+                loss = self.loss(sr, hr, learn_percent)
                 loss.backward()
                 self.optimizer.step()
                 epoch_loss += loss.item()
-        epoch_loss /= len(self.train_loader[0])
+        epoch_loss /= len(self.train_loader)
         with torch.no_grad():
             self.model.eval()
             for (lr, hr, img_name) in self.test_loader:

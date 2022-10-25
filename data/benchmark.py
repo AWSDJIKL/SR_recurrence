@@ -34,7 +34,10 @@ class Benchmark(srdata.SRData):
             dataset_size = 500
         elif self.args.test_set in ["BSD100", "Urban100"]:
             dataset_size = 100
-
+        elif self.args.test_set == "img_test":
+            lr_list.append("img_test/LR.png")
+            hr_list.append("img_test/HR.png")
+            return lr_list, hr_list
         for i in range(dataset_size):
             lr_list.append(os.path.join(self.lr_dir, "{}.png".format(i)))
             hr_list.append(os.path.join(self.hr_dir, "{}.png".format(i)))

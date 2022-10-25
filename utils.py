@@ -229,11 +229,11 @@ def save_img(tensor, save_dir, name):
     imageio.imsave(os.path.join(save_dir, "{}.png".format(name)), ndarr)
 
 
-def crop_img(img, img_size, n, stride=None, padding=0):
+def crop_img(img, img_size, n, stride=1.0, padding=0):
     # print(img.size())
     k = img_size // n
-    if not stride:
-        stride = k
+    stride = int(k * stride)
+    # print(padding)
     unfold = F.unfold(img, kernel_size=(k, k), stride=stride, padding=padding).permute(0, 2, 1)
     b, c, l = unfold.size()
     b = (b * c * l) // (3 * k * k)
@@ -247,7 +247,7 @@ def crop_img(img, img_size, n, stride=None, padding=0):
     #
     # # random.shuffle(img_list)
     # out = torch.cat(img_list, 0)
-    # # print(out.size())
+    # print(out.size())
     return out
 
 

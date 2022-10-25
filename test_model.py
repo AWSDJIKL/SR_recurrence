@@ -80,11 +80,11 @@ if __name__ == '__main__':
         # "FSRCNN_1_L1": "FSRCNN",
         # "ESPCN_1_L1": "ESPCN",
         # "RCAN_1_L1": "RCAN",
-        # "MSRN_1_L1": "MSRN",
+        "MSRN_1_L1": "MSRN",
         # "MSRN_PMG_1_L1": "MSRN_PMG",
         # "MSRN_OLD_PMG_OLD_PMG_1_L1": "MSRN_OLD_PMG",
         # "MSRN_PMG_PMG_no_crop_1_L1": "MSRN_PMG",
-        "MSRN_PMG_PMG_1_L1": "MSRN_PMG",
+        # "MSRN_PMG_PMG_1_L1": "MSRN_PMG",
     }
     # 新建一个dataframe保存每个模型的结果
 

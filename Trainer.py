@@ -6,6 +6,7 @@
 # @Author  : LINYANZHEN
 # @File    : Trainer.py
 import shutil
+from datetime import datetime
 
 import imageio
 import torch
@@ -17,6 +18,7 @@ import os
 import torch.optim as optim
 import torch.optim.lr_scheduler as lrs
 import utils
+import time
 
 
 class Trainer():
@@ -36,25 +38,15 @@ class Trainer():
             self.loss.half()
         self.model.to(self.device)
         self.loss.to(self.device)
-
         self.optimizer = self.make_optimizer()
         self.scheduler = self.make_scheduler()
+        now_time = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
         if self.is_PMG and model.support_PMG:
-            if self.is_crop:
-                crop_piece = "_".join(map(lambda x: str(x), self.args.crop_piece))
-                if self.args.is_stride:
-                    stride = "_".join(map(lambda x: str(x), self.args.stride))
-                    experiment_name = "x{}_{}_PMG_{}_{}_{}".format(args.scale, model.__class__.__name__, crop_piece,
-                                                                   stride, loss.loss_name)
-                else:
-                    experiment_name = "x{}_{}_PMG_{}_{}".format(args.scale, model.__class__.__name__, crop_piece,
-                                                                loss.loss_name)
-            else:
-                experiment_name = "x{}_{}_PMG_no_crop_{}".format(args.scale, model.__class__.__name__, loss.loss_name)
+            pass
         else:
             args.is_PMG = False
             self.is_PMG = False
-            experiment_name = "x{}_{}_{}".format(args.scale, model.__class__.__name__, loss.loss_name)
+        experiment_name = "{}_x{}_{}".format(now_time, args.scale, model.__class__.__name__)
         self.checkpoint = utils.Checkpoint(args, self.model, experiment_name)
         if args.load_checkpoint:
             # 加载上一次的模型，优化器和学习率调整器
@@ -66,8 +58,11 @@ class Trainer():
 
     def train_and_test(self):
         epoch = self.scheduler.last_epoch + 1
+        learn_percent = 0.5 + 0.1 * (epoch // 40)
         lr = self.scheduler.get_last_lr()[0]
-        self.checkpoint.write_log("[Epoch {}/{}]\tLearning rate: {}".format(epoch, self.args.epoch, lr))
+        self.checkpoint.write_log(
+            "[Epoch {}/{}]\tLearning rate: {}\tLearning percent: {}%".format(epoch, self.args.epoch, lr,
+                                                                             learn_percent * 100))
         # 将模型设置为训练模式
         self.model.train()
         epoch_loss = 0
@@ -81,14 +76,15 @@ class Trainer():
                 hr_size = self.args.patch_size
                 lr_list = []
                 hr_list = []
-                for n, stride in zip(self.args.crop_piece, self.args.stride):
+                for n in self.args.crop_piece:
                     if self.is_crop:
-                        if self.args.is_stride:
-                            lr_list.append(utils.crop_img(lr, lr_size, n, stride // self.args.scale))
-                            hr_list.append((utils.crop_img(hr, hr_size, n, stride)))
+                        if n == 1:
+                            lr_list.append(lr)
+                            hr_list.append(hr)
                         else:
-                            lr_list.append(utils.crop_img(lr, lr_size, n))
-                            hr_list.append((utils.crop_img(hr, hr_size, n)))
+                            lr_list.append(utils.crop_img(lr, lr_size, n, self.args.stride))
+                            hr_list.append(
+                                (utils.crop_img(hr, hr_size, n, self.args.stride)))
                     else:
                         lr_list.append(lr)
                         hr_list.append(hr)
