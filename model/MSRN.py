@@ -13,7 +13,10 @@ import torch.nn as nn
 
 def make_model(args, parent=False):
     print("prepare model")
-    print("MSRN")
+    if args.is_PMG:
+        print("MSRN use PMG")
+    else:
+        print("MSRN")
     return MSRN(args)
 
 
@@ -30,6 +33,7 @@ class MSRB(nn.Module):
         self.conv_5_2 = conv(n_feats * 2, n_feats * 2, kernel_size_2)
         self.confusion = nn.Conv2d(n_feats * 4, n_feats, 1, padding=0, stride=1)
         self.relu = nn.ReLU(inplace=True)
+
     def forward(self, x):
         input_1 = x
         output_3_1 = self.relu(self.conv_3_1(input_1))
@@ -46,7 +50,7 @@ class MSRB(nn.Module):
 class MSRN(nn.Module):
     def __init__(self, args, conv=common.default_conv):
         super(MSRN, self).__init__()
-        self.support_PMG = False
+        self.support_PMG = True
         n_feats = 64
         n_blocks = 8
         kernel_size = 3
@@ -69,6 +73,12 @@ class MSRN(nn.Module):
             modules_body.append(
                 MSRB(n_feats=n_feats))
 
+        channel_adaptive = [
+            nn.Conv2d(n_feats * ((self.n_blocks // 4) * i + 1), n_feats * (self.n_blocks + 1), 1, padding=0, stride=1)
+            for i in range(1, 4)
+        ]
+        self.channel_adaptive = nn.Sequential(*channel_adaptive)
+
         # define tail module
         modules_tail = [
             nn.Conv2d(n_feats * (self.n_blocks + 1), n_feats, 1, padding=0, stride=1),
@@ -82,18 +92,20 @@ class MSRN(nn.Module):
         self.body = nn.Sequential(*modules_body)
         self.tail = nn.Sequential(*modules_tail)
 
-    def forward(self, x):
+    def forward(self, x, step=3):
         x = self.sub_mean(x)
         x = self.head(x)
         res = x
-
         MSRB_out = []
-        for i in range(self.n_blocks):
-            x = self.body[i](x)
+        for i in range(step + 1):
+            x = self.body[2 * i](x)
+            MSRB_out.append(x)
+            x = self.body[2 * i + 1](x)
             MSRB_out.append(x)
         MSRB_out.append(res)
-
         res = torch.cat(MSRB_out, 1)
+        if step < 3:
+            res = self.channel_adaptive[step](res)
         x = self.tail(res)
         x = self.add_mean(x)
         return x

@@ -22,4 +22,5 @@ class SPL(nn.Module):
         result = loss[index[0]]
         for i in index[1:]:
             result += loss[i]
+        result = result / int(len(loss) * learn_percent)
         return result

@@ -14,7 +14,10 @@ from model import common
 
 def make_model(args):
     print("prepare model")
-    print("RCAN")
+    if args.is_PMG:
+        print("RCAN use PMG")
+    else:
+        print("RCAN")
     return RCAN(args)
 
 
@@ -83,9 +86,9 @@ class ResidualGroup(nn.Module):
 class RCAN(nn.Module):
     def __init__(self, args, conv=common.default_conv):
         super(RCAN, self).__init__()
-        self.support_PMG = False
-        n_resgroups = args.n_resgroups
-        n_resblocks = args.n_resblocks
+        self.support_PMG = True
+        n_resgroups = 10  # 10
+        n_resblocks = 20  # 20
         n_feats = args.n_feats
         kernel_size = 3
         reduction = args.reduction
@@ -120,11 +123,14 @@ class RCAN(nn.Module):
         self.body = nn.Sequential(*modules_body)
         self.tail = nn.Sequential(*modules_tail)
 
-    def forward(self, x):
+    def forward(self, x, step=4):
         x = self.sub_mean(x)
         x = self.head(x)
-
-        res = self.body(x)
+        res = x
+        for i in range(step + 1):
+            res = self.body[2 * i](res)
+            res = self.body[2 * i + 1](res)
+        # res = self.body(x)
         res += x
 
         x = self.tail(res)

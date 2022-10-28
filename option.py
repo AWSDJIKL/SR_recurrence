@@ -22,15 +22,15 @@ parser.add_argument('--noise', type=str, default='.',
 parser.add_argument('--n_colors', type=int, default=3,
                     help='number of color channels to use')
 # model setting
-parser.add_argument("--model_name", type=str, default="ConvSR", help="")
-parser.add_argument("--is_PMG", type=lambda x: x.lower() == 'true', default=False, help="")
-parser.add_argument("--is_crop", type=lambda x: x.lower() == 'true', default=False, help="")
-parser.add_argument("--crop_piece", nargs='+', type=int, default=[12, 6, 3, 1], help="")
+parser.add_argument("--model_name", type=str, default="VDSR", help="")
+parser.add_argument("--is_PMG", type=lambda x: x.lower() == 'true', default=True, help="")
+parser.add_argument("--is_crop", type=lambda x: x.lower() == 'true', default=True, help="")
+parser.add_argument("--crop_piece", nargs='+', type=int, default=[12, 6, 1], help="")
 parser.add_argument("--stride", type=float, default=1, help="")
 
-parser.add_argument('--n_resgroups', type=int, default=4,
+parser.add_argument('--n_resgroups', type=int, default=10,
                     help='number of residual groups')
-parser.add_argument('--n_resblocks', type=int, default=4,
+parser.add_argument('--n_resblocks', type=int, default=16,
                     help='number of residual blocks')
 parser.add_argument('--n_feats', type=int, default=64,
                     help='number of feature maps')

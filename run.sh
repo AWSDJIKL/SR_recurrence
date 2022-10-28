@@ -96,11 +96,54 @@ nohup python main.py --model_name MSRN_PMG --scale 4 --is_PMG True --patch_size 
 
 #实验meta-learning
 nohup python meta_main.py --model_name MSRN_PMG --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 4 8 16 --stride 2 --loss_name 1_spl --device cuda:0 >log/x4_meta_MSRN_PMG_PMG_1_1_4_8_16_spl 2>&1 &
-#5482
+#6422
 nohup python meta_main.py --model_name MSRN_PMG --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 3 6 12 --stride 2 --loss_name 1_spl --device cuda:1 >log/x4_meta_MSRN_PMG_PMG_1_1_3_6_12_spl 2>&1 &
-#5552
+#6500
 
 nohup python main.py --model_name MSRN_PMG --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 4 8 16 --stride 2 --loss_name 1_L1 --device cuda:0 >log/x4_MSRN_PMG_PMG_1_1_4_8_16_L1 2>&1 &
-#5655
+#5882
 nohup python main.py --model_name MSRN_PMG --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 4 8 16 --stride 3 --loss_name 1_L1 --device cuda:1 >log/x4_MSRN_PMG_PMG_1_1_4_8_16_L1 2>&1 &
-#5732
+#5959
+
+#对比实验
+nohup python main.py --model_name SRCNN --scale 4 --is_PMG False --patch_size 384 --loss_name 1_L1 --device cuda:0 >log/x4_SRCNN_1_L1 2>&1 &
+#
+nohup python main.py --model_name SRCNN --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 6 12 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_SRCNN_PMG_1_6_12_1_L1 2>&1 &
+#
+nohup python main.py --model_name SRCNN --scale 4 --is_PMG True --patch_size 384 --crop_piece 12 6 1 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_SRCNN_PMG_12_6_1_1_L1 2>&1 &
+#
+
+nohup python main.py --model_name ESPCN --scale 4 --is_PMG False --patch_size 384 --loss_name 1_L1 --device cuda:0 >log/x4_ESPCN_1_L1 2>&1 &
+#
+nohup python main.py --model_name ESPCN --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 6 12 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_ESPCN_PMG_1_6_12_1_L1 2>&1 &
+#
+nohup python main.py --model_name ESPCN --scale 4 --is_PMG True --patch_size 384 --crop_piece 12 6 1 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_ESPCN_PMG_12_6_1_1_L1 2>&1 &
+#
+
+nohup python main.py --model_name VDSR --scale 4 --is_PMG False --patch_size 384 --loss_name 1_L1 --device cuda:0 >log/x4_VDSR_1_L1 2>&1 &
+#
+nohup python main.py --model_name VDSR --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 6 12 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_VDSR_PMG_1_6_12_1_L1 2>&1 &
+#
+nohup python main.py --model_name VDSR --scale 4 --is_PMG True --patch_size 384 --crop_piece 12 6 1 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_VDSR_PMG_12_6_1_1_L1 2>&1 &
+#
+
+nohup python main.py --model_name EDSR --scale 4 --is_PMG False --patch_size 384 --loss_name 1_L1 --device cuda:0 >log/x4_EDSR_1_L1 2>&1 &
+#
+nohup python main.py --model_name EDSR --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 3 6 12 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_EDSR_PMG_1_3_6_12_1_L1 2>&1 &
+#
+nohup python main.py --model_name EDSR --scale 4 --is_PMG True --patch_size 384 --crop_piece 12 6 3 1 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_EDSR_PMG_12_6_3_1_1_L1 2>&1 &
+#
+
+nohup python main.py --model_name MSRN --scale 4 --is_PMG False --patch_size 384 --loss_name 1_L1 --device cuda:0 >log/x4_MSRN_1_L1 2>&1 &
+#
+nohup python main.py --model_name MSRN --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 3 6 12 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_MSRN_PMG_1_3_6_12_1_L1 2>&1 &
+#
+nohup python main.py --model_name MSRN --scale 4 --is_PMG True --patch_size 384 --crop_piece 12 6 3 1 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_MSRN_PMG_12_6_3_1_1_L1 2>&1 &
+#
+
+nohup python main.py --model_name RCAN --scale 4 --is_PMG False --patch_size 384 --loss_name 1_L1 --device cuda:0 >log/x4_RCAN_1_L1 2>&1 &
+#
+nohup python main.py --model_name RCAN --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 3 6 8 12 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_RCAN_PMG_1_3_6_8_12_1_L1 2>&1 &
+#
+nohup python main.py --model_name RCAN --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 3 6 8 12 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_RCAN_PMG_12_8_6_3_1_1_L1 2>&1 &
+#

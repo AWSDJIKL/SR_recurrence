@@ -42,11 +42,14 @@ class Trainer():
         self.scheduler = self.make_scheduler()
         now_time = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
         if self.is_PMG and model.support_PMG:
-            pass
+            crop_piece = "_".join(map(str, args.crop_piece))
+            experiment_name = "x{}_{}_PMG_{}_stride{}".format(args.scale, model.__class__.__name__, crop_piece,
+                                                              args.stride)
         else:
             args.is_PMG = False
             self.is_PMG = False
-        experiment_name = "{}_x{}_{}".format(now_time, args.scale, model.__class__.__name__)
+            experiment_name = "x{}_{}".format(args.scale, model.__class__.__name__)
+        # experiment_name = "{}_x{}_{}".format(now_time, args.scale, model.__class__.__name__)
         self.checkpoint = utils.Checkpoint(args, self.model, experiment_name)
         if args.load_checkpoint:
             # 加载上一次的模型，优化器和学习率调整器
@@ -61,8 +64,7 @@ class Trainer():
         learn_percent = 0.5 + 0.1 * (epoch // 40)
         lr = self.scheduler.get_last_lr()[0]
         self.checkpoint.write_log(
-            "[Epoch {}/{}]\tLearning rate: {}\tLearning percent: {}%".format(epoch, self.args.epoch, lr,
-                                                                             learn_percent * 100))
+            "[Epoch {}/{}]\tLearning rate: {}".format(epoch, self.args.epoch, lr))
         # 将模型设置为训练模式
         self.model.train()
         epoch_loss = 0

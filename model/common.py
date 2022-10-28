@@ -21,7 +21,9 @@ def default_conv(in_channels, out_channels, kernel_size, bias=True, padding_mode
     '''
     return nn.Conv2d(in_channels, out_channels, kernel_size, padding=(kernel_size // 2), bias=bias,
                      padding_mode=padding_mode)
-
+def conv_layer(in_channels, out_channels, kernel_size, stride=1, dilation=1, groups=1):
+    padding = int((kernel_size - 1) / 2) * dilation
+    return nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding=padding, bias=True, dilation=dilation, groups=groups)
 
 class MeanShift(nn.Conv2d):
     def __init__(self, rgb_range, rgb_mean, rgb_std, sign=-1):
@@ -53,7 +55,6 @@ class BasicBlock(nn.Sequential):
         if bn: m.append(nn.BatchNorm2d(out_channels))
         if act is not None: m.append(act)
         super(BasicBlock, self).__init__(*m)
-
 
 class ResBlock(nn.Module):
     def __init__(
