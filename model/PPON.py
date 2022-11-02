@@ -17,7 +17,7 @@ from timm.models.registry import register_model
 def make_model(args, parent=False):
     print("prepare model")
     if args.is_PMG:
-        print("PPON_PMG")
+        print("PPON use PMG")
     else:
         print("PPON")
     return PPON(args)
@@ -95,12 +95,15 @@ class PPON(nn.Module):
         super(PPON, self).__init__()
         self.args = args
         n_feats = 64
-        self.nbs = [3, 3, 3, 3]
+        self.nbs = [6, 6, 6, 6]
         scale = args.scale
         self.head = conv_layer(args.n_colors, 64, 3)
-        modules_body = nn.ModuleList()
-        for i in range(4):
-            modules_body.append(RRBlock_32(self.nbs[i]))
+        content_branch = [RRBlock_32(3) for _ in range(24)]
+        ssim_branch = [RRBlock_32(3) for _ in range(2)]  # SSIM
+        gan_branch = [RRBlock_32(3) for _ in range(2)]  # Gan
+
+
+
         modules_tail = [
             conv_layer(n_feats, n_feats, 3),
             Upsampler(default_conv, scale, n_feats, act=False),

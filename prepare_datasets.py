@@ -24,7 +24,7 @@ link_list = {
     # "BSD100": "https://uofi.box.com/shared/static/qgctsplb8txrksm9to9x01zfa4m61ngq.zip",
     # "Urban100": "https://uofi.box.com/shared/static/65upg43jjd0a4cwsiqgl6o6ixube6klm.zip",
     # "DIV2K_train_HR": "http://data.vision.ee.ethz.ch/cvl/DIV2K/DIV2K_train_HR.zip",
-    "Flickr2K": "http://cv.snu.ac.kr/research/EDSR/Flickr2K.tar",
+    "Flickr2K": "https://cv.snu.ac.kr/research/EDSR/Flickr2K.tar",
     # "DIV2K_train_LR": "http://data.vision.ee.ethz.ch/cvl/DIV2K/DIV2K_train_LR_bicubic_X4.zip",
     # "DIV2K_valid": "http://data.vision.ee.ethz.ch/cvl/DIV2K/DIV2K_valid_HR.zip",
     # "ms_coco_train": "http://images.cocodataset.org/zips/train2014.zip",
@@ -76,8 +76,22 @@ def uncompress(src_file, output_dir=None):
     os.remove(src_file)
 
 
+def unit_convert(size):
+    unit_list = ["B", "KB", "MB", "GB"]
+    unit_index = 0
+    while size > 1024:
+        unit_index += 1
+        if unit_index > len(unit_list) - 1:
+            unit_index = len(unit_list) - 1
+            break
+        size = size / 1024
+    return "{:.3f}{}".format(size, unit_list[unit_index])
+
+
 def bar_progress(current, total, width=80):
-    progress_message = "Downloading: %d%% [%d / %d] bytes" % (current / total * 100, current, total)
+    # progress_message = "Downloading: %d%% [%d / %d] bytes" % (current / total * 100, current, total)
+    progress_message = "Downloading: %d%% [%s / %s] " % (
+        current / total * 100, unit_convert(current), unit_convert(total))
     # Don't use print() as it will print in new line every time.
     sys.stdout.write("\r" + progress_message)
     sys.stdout.flush()
@@ -94,6 +108,7 @@ def download_datasets(dataset_path):
             shutil.rmtree(output_path)
         os.mkdir(output_path)
         file_name = wget.download(link, output_path, bar=bar_progress)
+        # file_name = wget.download(link, output_path)
         print(file_name)
         uncompress(file_name)
 
@@ -117,6 +132,11 @@ def get_hr_list(dataset):
                     hr_list.append(os.path.join(root, file))
     elif dataset in ["DIV2K_train_HR"]:
         for root, dirs, files in os.walk("dataset/{}/{}".format(dataset, dataset)):
+            for file in files:
+                if "png" in file:
+                    hr_list.append(os.path.join(root, file))
+    elif dataset in ["Flickr2K"]:
+        for root, dirs, files in os.walk("dataset/Flickr2K/Flickr2K/Flickr2K_HR"):
             for file in files:
                 if "png" in file:
                     hr_list.append(os.path.join(root, file))
@@ -163,8 +183,7 @@ if __name__ == '__main__':
     print("所有数据集下载完成")
 
     # print("开始生成数据集")
-    #
-    # for dataset in ["Set5", "Set14", "BSD100", "Urban100", "DIV2K_train_HR"]:
+    # for dataset in ["Set5", "Set14", "BSD100", "Urban100", "DIV2K_train_HR","Flickr2K"]:
     #     print(dataset)
     #     for scale in [4, 8]:
     #         hr_list = get_hr_list(dataset)
