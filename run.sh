@@ -147,3 +147,10 @@ nohup python main.py --model_name RCAN --scale 4 --is_PMG True --patch_size 384 
 #51974
 nohup python main.py --model_name RCAN --scale 4 --is_PMG True --patch_size 384 --crop_piece 12 8 6 3 1 --stride 1 --loss_name 1_L1 --device cuda:1 >log/x4_RCAN_PMG_12_8_6_3_1_1_L1 2>&1 &
 #52238
+
+nohup python main.py --model_name PPON --scale 4 --is_PMG False --patch_size 384 --loss_name 1_L1 --device cuda:0 >log/x4_PPON_1_L1 2>&1 &
+#84286
+nohup python main.py --model_name PPON --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 3 6 12 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_PPON_PMG_1_3_6_12_1_L1 2>&1 &
+#
+nohup python main.py --model_name PPON --scale 4 --is_PMG True --patch_size 384 --crop_piece 12 6 3 1 --stride 1 --loss_name 1_L1 --device cuda:1 >log/x4_PPON_PMG_12_6_3_1_1_L1 2>&1 &
+#

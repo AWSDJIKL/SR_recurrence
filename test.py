@@ -2,6 +2,8 @@
 '''
 
 '''
+import re
+
 import PIL.Image
 # @Time    : 2021/12/23 10:42
 # @Author  : LINYANZHEN
@@ -16,23 +18,30 @@ import torch.nn.functional as F
 import imageio
 from PIL import Image
 import torchvision.transforms
+import pandas as pd
+if __name__ == '__main__':
 
-model = model.MSRN.MSRN(args)
-model.parameters()
-model.load_state_dict(torch.load("checkpoint/x16_MSRN_1_L1/model/final.pth"))
+    with open("test.txt", "r", encoding="utf8") as file:
+        place_num_dict = {}
+        for line in file.readlines():
+            places_pattern = re.compile("[\u4e00-\u9fa5]+")
+            num_pattern = re.compile("[0-9]+")
+            places = places_pattern.findall(line)
+            num = num_pattern.findall(line)
+            # print(places)
+            # print(num)
 
-img=Image.open("img_test/HR.png").convert("RGB")
-lr = img.resize((32, 32),Image.BICUBIC)
-lr.save("img_test/LR.png")
-lr = imageio.imread("img_test/LR.png")
-np_transpose = np.ascontiguousarray(lr.transpose((2, 0, 1)))
-# 转tensor
-tensor = torch.from_numpy(np_transpose).float()
-tensor.mul_(255 / 255)
-lr_tensor = tensor.unsqueeze(0)
-sr = model(lr_tensor)
-normalized = sr[0].data.mul(255 / 255)
-# permute：交换维度函数，为了适应numpy，从(c,h,w)改为(h,w,c)
-ndarr = normalized.byte().permute(1, 2, 0).cpu().numpy()
-# 使用imageio.imsave函数保存，一共两个参数：路径，numpy数组(图片)
-imageio.imsave("img_test/SR.png", ndarr)
+            for i in range(len(places)):
+                if places[i] not in place_num_dict.keys():
+                    place_num_dict[places[i]] = int(num[i])
+                else:
+                    place_num_dict[places[i]] += int(num[i])
+        df=pd.DataFrame(columns=place_num_dict.keys())
+        # print(df)
+        sum=0
+        for k,v in place_num_dict.items():
+            sum+=v
+            print(k,v)
+            df[k]=v
+        # print(df)
+        print(sum)

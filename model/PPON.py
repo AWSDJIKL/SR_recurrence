@@ -2,6 +2,8 @@
 '''
 
 '''
+import math
+
 # @Time    : 2022/10/25 21:59
 # @Author  : LINYANZHEN
 # @File    : PPON.py
@@ -12,6 +14,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from timm.models.layers import trunc_normal_, DropPath
 from timm.models.registry import register_model
+from collections import OrderedDict
 
 
 def make_model(args, parent=False):
@@ -34,6 +37,88 @@ def activation(act_type, inplace=True, neg_slope=0.2, n_prelu=1):
     else:
         raise NotImplementedError('activation layer [{:s}] is not found'.format(act_type))
     return layer
+
+
+def sequential(*args):
+    if len(args) == 1:
+        if isinstance(args[0], OrderedDict):
+            raise NotImplementedError('sequential does not support OrderedDict input.')
+        return args[0]
+    modules = []
+    for module in args:
+        if isinstance(module, nn.Sequential):
+            for submodule in module.children():
+                modules.append(submodule)
+        elif isinstance(module, nn.Module):
+            modules.append(module)
+    return nn.Sequential(*modules)
+
+
+def get_valid_padding(kernel_size, dilation):
+    kernel_size = kernel_size + (kernel_size - 1) * (dilation - 1)
+    padding = (kernel_size - 1) // 2
+    return padding
+
+
+def norm(norm_type, nc):
+    norm_type = norm_type.lower()
+    if norm_type == 'batch':
+        layer = nn.BatchNorm2d(nc, affine=True)
+    elif norm_type == 'instance':
+        layer = nn.InstanceNorm2d(nc, affine=False)
+    else:
+        raise NotImplementedError('normalization layer [{:s}] is not found'.format(norm_type))
+    return layer
+
+
+def pad(pad_type, padding):
+    pad_type = pad_type.lower()
+    if padding == 0:
+        return None
+    if pad_type == 'reflect':
+        layer = nn.ReflectionPad2d(padding)
+    elif pad_type == 'replicate':
+        layer = nn.ReplicationPad2d(padding)
+    else:
+        raise NotImplementedError('padding layer [{:s}] is not implemented'.format(pad_type))
+    return layer
+
+
+def conv_block(in_nc, out_nc, kernel_size, stride=1, dilation=1, groups=1, bias=True,
+               pad_type='zero', norm_type=None, act_type='relu'):
+    padding = get_valid_padding(kernel_size, dilation)
+    p = pad(pad_type, padding) if pad_type and pad_type != 'zero' else None
+    padding = padding if pad_type == 'zero' else 0
+
+    c = nn.Conv2d(in_nc, out_nc, kernel_size=kernel_size, stride=stride, padding=padding,
+                  dilation=dilation, bias=bias, groups=groups)
+    a = activation(act_type) if act_type else None
+    n = norm(norm_type, out_nc) if norm_type else None
+    return sequential(p, c, n, a)
+
+
+class ShortcutBlock(nn.Module):
+    # Elementwise sum the output of a submodule to its input
+    def __init__(self, submodule):
+        super(ShortcutBlock, self).__init__()
+        self.sub = submodule
+
+    def forward(self, x):
+        output = x + self.sub(x)
+        return output
+
+    def __repr__(self):
+        tmpstr = 'Identity + \n|'
+        modstr = self.sub.__repr__().replace('\n', '\n|')
+        tmpstr = tmpstr + modstr
+        return tmpstr
+
+
+def upconv_block(in_channels, out_channels, upscale_factor=2, kernel_size=3, stride=1, act_type='relu'):
+    upsample = nn.Upsample(scale_factor=upscale_factor, mode='nearest')
+    conv = conv_layer(in_channels, out_channels, kernel_size, stride)
+    act = activation(act_type)
+    return sequential(upsample, conv, act)
 
 
 class _ResBlock_32(nn.Module):
@@ -93,39 +178,40 @@ class RRBlock_32(nn.Module):
 class PPON(nn.Module):
     def __init__(self, args):
         super(PPON, self).__init__()
+        self.support_PMG = True
         self.args = args
         n_feats = 64
-        self.nbs = [6, 6, 6, 6]
         scale = args.scale
-        self.head = conv_layer(args.n_colors, 64, 3)
-        content_branch = [RRBlock_32(3) for _ in range(24)]
-        ssim_branch = [RRBlock_32(3) for _ in range(2)]  # SSIM
-        gan_branch = [RRBlock_32(3) for _ in range(2)]  # Gan
+        self.fea_conv = conv_layer(3, n_feats, kernel_size=3)  # common
+        rb_blocks = [RRBlock_32(3) for _ in range(24)]
+        self.LR_conv = conv_layer(n_feats, n_feats, kernel_size=3)
+        act_type = "lrelu"
+        upsample_block = upconv_block
+        n_upscale = int(math.log(scale, 2))
+        if scale == 3:
+            n_upscale = 1
+        if scale == 3:
+            upsampler = upsample_block(n_feats, n_feats, 3, act_type=act_type)
+        else:
+            upsampler = [upsample_block(n_feats, n_feats, act_type=act_type) for _ in range(n_upscale)]
 
+        HR_conv0 = conv_block(n_feats, n_feats, kernel_size=3, norm_type=None, act_type=act_type)
+        HR_conv1 = conv_block(n_feats, 3, kernel_size=3, norm_type=None, act_type=None)
+        self.body = nn.Sequential(*rb_blocks)
+        self.CRM = sequential(*upsampler, HR_conv0, HR_conv1)  # recon content
 
-
-        modules_tail = [
-            conv_layer(n_feats, n_feats, 3),
-            Upsampler(default_conv, scale, n_feats, act=False),
-            conv_layer(n_feats, args.n_colors, 3)]
-        rgb_mean = (0.4488, 0.4371, 0.4040)
-        rgb_std = (1.0, 1.0, 1.0)
-        self.sub_mean = MeanShift(args.rgb_range, rgb_mean, rgb_std)
-        self.body = nn.Sequential(*modules_body)
-        self.tail = nn.Sequential(*modules_tail)
-        self.add_mean = MeanShift(args.rgb_range, rgb_mean, rgb_std, 1)
-
-    def forward(self, x, step=None):
-        x = self.sub_mean(x)
-        x = self.head(x)
+    def forward(self, x, step=3):
+        # x = self.sub_mean(x)
+        x = self.fea_conv(x)
         res = x
-
-        conv_out = []
         if step:
             for i in range((step + 1)):
-                x = self.body[i](x)
+                for j in range(6):
+                    x = self.body[6 * i + j](x)
         else:
             x = self.body(x)
-        x = self.tail(res)
-        x = self.add_mean(x)
+        x = self.LR_conv(x)
+        res = x + res
+        x = self.CRM(res)
+        # x = self.add_mean(x)
         return x
