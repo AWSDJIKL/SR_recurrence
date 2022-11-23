@@ -2,9 +2,10 @@
 '''
 
 '''
-# @Time    : 2022/9/27 20:35
+# @Time    : 2022/11/8 22:48
 # @Author  : LINYANZHEN
-# @File    : meta_Trainer.py
+# @File    : shadow_Trainer.py
+
 import shutil
 from datetime import datetime
 
@@ -42,11 +43,14 @@ class Trainer():
         self.scheduler = self.make_scheduler()
         now_time = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
         if self.is_PMG and model.support_PMG:
-            pass
+            crop_piece = "_".join(map(str, args.crop_piece))
+            experiment_name = "x{}_{}_PMG_{}_stride{}_{}".format(args.scale, model.__class__.__name__, crop_piece,
+                                                                 args.stride, args.loss_name)
         else:
             args.is_PMG = False
             self.is_PMG = False
-        experiment_name = "{}_x{}_{}".format(now_time, args.scale, model.__class__.__name__)
+            experiment_name = "x{}_{}".format(args.scale, model.__class__.__name__)
+        # experiment_name = "{}_x{}_{}".format(now_time, args.scale, model.__class__.__name__)
         self.checkpoint = utils.Checkpoint(args, self.model, experiment_name)
         if args.load_checkpoint:
             # 加载上一次的模型，优化器和学习率调整器
@@ -58,15 +62,14 @@ class Trainer():
 
     def train_and_test(self):
         epoch = self.scheduler.last_epoch + 1
-        learn_percent = 0.6 + 0.1 * (epoch // 200)
+        learn_percent = 0.5 + 0.1 * (epoch // 40)
         lr = self.scheduler.get_last_lr()[0]
         self.checkpoint.write_log(
-            "[Epoch {}/{}]\tLearning rate: {}\tLearning percent: {}%".format(epoch, self.args.epoch, lr,
-                                                                             learn_percent * 100))
+            "[Epoch {}/{}]\tLearning rate: {}".format(epoch, self.args.epoch, lr))
         # 将模型设置为训练模式
         self.model.train()
         epoch_loss = 0
-        epoch_psnr = 0
+        epoch_psnr = []
         progress = tqdm.tqdm(self.train_loader, total=len(self.train_loader))
         for (lr, hr, img_name) in progress:
             lr = self.prepare(lr)
@@ -97,9 +100,9 @@ class Trainer():
                     # print(lr_list[i].device)
                     # print(next(self.model.parameters()).device)
                     self.optimizer.zero_grad()
-                    sr = self.model(lr_list[i], i)
+                    srs = self.model(lr_list[i], i)
                     # loss = self.loss(sr, hr_list[i], i)
-                    loss = self.loss(sr, hr_list[i], learn_percent)
+                    loss = self.loss(srs, hr_list[i])
                     if i == len(self.args.crop_piece) - 1:
                         loss = loss * 2
                     loss.backward()
@@ -107,10 +110,10 @@ class Trainer():
                     epoch_loss += loss.item() / len(self.args.crop_piece)
             else:
                 self.optimizer.zero_grad()
-                sr = self.model(lr)
+                srs = self.model(lr)
                 # self.save_sr_result([lr, hr, sr], img_name[0], epoch, self.checkpoint.checkpoint_dir)
                 # return
-                loss = self.loss(sr, hr, learn_percent)
+                loss = self.loss(srs[-1], hr)
                 loss.backward()
                 self.optimizer.step()
                 epoch_loss += loss.item()
@@ -120,17 +123,24 @@ class Trainer():
             for (lr, hr, img_name) in self.test_loader:
                 lr = self.prepare(lr)
                 hr = self.prepare(hr)
-                sr = self.model(lr)
+                srs = self.model(lr)
                 # print(sr)
-                sr = utils.quantize(sr, self.args.rgb_range)
-                #
-                if self.args.save_epoch_result:
-                    self.save_sr_result([lr, hr, sr], img_name[0], epoch, self.checkpoint.checkpoint_dir)
-                psnr = utils.calculate_psnr(sr, hr, self.args.scale, self.args.rgb_range)
-                epoch_psnr += psnr
-        epoch_psnr /= len(self.test_loader)
+                for i in range(len(srs)):
+                    sr = srs[i]
+                    if i >= len(epoch_psnr):
+                        epoch_psnr.append(0)
+                    sr = utils.quantize(sr, self.args.rgb_range)
+                    #
+                    if self.args.save_epoch_result:
+                        self.save_sr_result([lr, hr, sr], img_name[0], epoch, self.checkpoint.checkpoint_dir)
+                    psnr = utils.calculate_psnr(sr, hr, self.args.scale, self.args.rgb_range)
+                    epoch_psnr[i] += psnr
+        for i in range(len(epoch_psnr)):
+            epoch_psnr[i] /= len(self.test_loader)
+            self.checkpoint.write_log("stage{} psnr :{}".format(i, epoch_psnr[i]))
         self.scheduler.step()
-        self.checkpoint.record_epoch(epoch, epoch_loss, epoch_psnr, self.optimizer, self.scheduler)
+
+        self.checkpoint.record_epoch(epoch, epoch_loss, epoch_psnr[-1], self.optimizer, self.scheduler)
 
     def prepare(self, tensor):
         if self.half_precision:

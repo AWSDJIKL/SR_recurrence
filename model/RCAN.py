@@ -124,12 +124,12 @@ class RCAN(nn.Module):
         self.tail = nn.Sequential(*modules_tail)
 
     def forward(self, x, step=4):
+        step_to_group = [2, 4, 7, 10]
         x = self.sub_mean(x)
         x = self.head(x)
         res = x
-        for i in range(step + 1):
-            res = self.body[2 * i](res)
-            res = self.body[2 * i + 1](res)
+        for i in range(step_to_group[step]):
+            res = self.body[i](res)
         # res = self.body(x)
         res += x
 

@@ -29,6 +29,9 @@ class Loss(nn.Module):
             elif loss_type == "spl":
                 module = import_module("loss.spl")
                 loss_function = getattr(module, "SPL")()
+            elif loss_type == "shadow":
+                module = import_module("loss.shadow")
+                loss_function = getattr(module, "Shadow")()
             elif loss_type == "Charbonnier":
                 module = import_module("loss.Charbonnier")
                 loss_function = getattr(module, "L1_Charbonnier_loss")()

@@ -463,8 +463,8 @@ class SAN(nn.Module):
     def __init__(self, args, conv=common.default_conv):
         super(SAN, self).__init__()
         self.support_PMG = True
-        n_resgroups = 20
-        n_resblocks = 10
+        n_resgroups = 4
+        n_resblocks = 4
         n_feats = 64
         kernel_size = 3
         reduction = 16
@@ -520,6 +520,8 @@ class SAN(nn.Module):
         # return nn.Sequential(*layers)
 
     def forward(self, x, step=3):
+        step_to_group = [1, 2, 3, 4]
+        # step_to_group = [5, 10, 15, 20]
         x = self.sub_mean(x)
         x = self.head(x)
 
@@ -532,9 +534,9 @@ class SAN(nn.Module):
         # res = self.RG(xx)
         # res = res + xx
         ## share-source residual gruop
-        for i in range(step + 1):
-            for j in range(5):
-                xx = self.RG[5 * i + j](xx) + self.gamma * residual
+
+        for i in range(step_to_group[step]):
+            xx = self.RG[i](xx) + self.gamma * residual
         # for i, l in enumerate(self.RG):
         #     xx = l(xx) + self.gamma * residual
         # xx = self.gamma*xx + residual
