@@ -22,7 +22,7 @@ parser.add_argument('--noise', type=str, default='.',
 parser.add_argument('--n_colors', type=int, default=3,
                     help='number of color channels to use')
 # model setting
-parser.add_argument("--model_name", type=str, default="SAN", help="")
+parser.add_argument("--model_name", type=str, default="RCAN", help="")
 parser.add_argument("--is_PMG", type=lambda x: x.lower() == 'true', default=True, help="")
 parser.add_argument("--is_crop", type=lambda x: x.lower() == 'true', default=True, help="")
 parser.add_argument("--crop_piece", nargs='+', type=int, default=[12, 6, 3, 1], help="")
@@ -75,8 +75,8 @@ parser.add_argument('--epsilon', type=float, default=1e-8,
 parser.add_argument('--weight_decay', type=float, default=0,
                     help='weight decay')
 # Loss setting
-# parser.add_argument('--loss_name', type=str, default='1_L1', help='loss function configuration')
-parser.add_argument('--loss_name', type=str, default='1_shadow', help='loss function configuration')
+parser.add_argument('--loss_name', type=str, default='1_L1', help='loss function configuration')
+# parser.add_argument('--loss_name', type=str, default='1_shadow', help='loss function configuration')
 # parser.add_argument('--loss_name', type=str, default='1_spl', help='loss function configuration')
 # parser.add_argument('--loss_name', type=str, default='1_L1+1e-3_VGG', help='loss function configuration')
 

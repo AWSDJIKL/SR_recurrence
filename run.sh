@@ -166,7 +166,7 @@ nohup python main.py --model_name MSRN --scale 4 --is_PMG True --patch_size 384 
 nohup python main.py --model_name PPON --scale 4 --is_PMG True --patch_size 384 --crop_piece 12 6 3 1 --stride 2 --loss_name 1_L1 --device cuda:1 >log/x4_PPON_PMG_12_6_3_1_2_L1 2>&1 &
 #129538
 nohup python main.py --model_name RCAN --scale 4 --is_PMG True --patch_size 384 --crop_piece 12 6 3 1 --stride 2 --loss_name 1_L1 --device cuda:0 >log/x4_RCAN_PMG_12_6_3_1_2_L1 2>&1 &
-#131744
+#137628
 nohup python main.py --model_name SAN --scale 4 --is_PMG False --patch_size 384 --loss_name 1_L1 --device cuda:1 >log/x4_SAN_1_L1 2>&1 &
 #
 nohup python main.py --model_name SAN --scale 4 --is_PMG True --patch_size 384 --crop_piece 12 6 3 1 --stride 2 --loss_name 1_L1 --device cuda:1 >log/x4_SAN_PMG_12_6_3_1_2_L1 2>&1 &
