@@ -223,30 +223,30 @@ class RFDN(nn.Module):
         self.scale_idx = 0
 
     def forward(self, x, step=3):
-        # x = self.fea_conv(x)
-        # res = x
-        # out_B = []
-        # for i in range(step + 1):
-        #     x = self.body[i](x)
-        #     out_B.append(x)
-        # out_B = torch.cat(out_B, dim=1)
-        # if step < 3:
-        #     out_B = self.channel_adaptive[step](out_B)
-        # out_B = self.c(out_B)
-        # out_lr = self.LR_conv(out_B) + res
-        #
-        # output = self.upsampler(out_lr)
-        #
-        # return output
-        out_fea = self.fea_conv(x)
-        out_B1 = self.B1(out_fea)
-        out_B2 = self.B2(out_B1)
-        out_B3 = self.B3(out_B2)
-        out_B4 = self.B4(out_B3)
-
-        out_B = self.c(torch.cat([out_B1, out_B2, out_B3, out_B4], dim=1))
-        out_lr = self.LR_conv(out_B) + out_fea
+        x = self.fea_conv(x)
+        res = x
+        out_B = []
+        for i in range(step + 1):
+            x = self.body[i](x)
+            out_B.append(x)
+        out_B = torch.cat(out_B, dim=1)
+        if step < 3:
+            out_B = self.channel_adaptive[step](out_B)
+        out_B = self.c(out_B)
+        out_lr = self.LR_conv(out_B) + res
 
         output = self.upsampler(out_lr)
 
         return output
+        # out_fea = self.fea_conv(x)
+        # out_B1 = self.B1(out_fea)
+        # out_B2 = self.B2(out_B1)
+        # out_B3 = self.B3(out_B2)
+        # out_B4 = self.B4(out_B3)
+        #
+        # out_B = self.c(torch.cat([out_B1, out_B2, out_B3, out_B4], dim=1))
+        # out_lr = self.LR_conv(out_B) + out_fea
+        #
+        # output = self.upsampler(out_lr)
+        #
+        # return output
