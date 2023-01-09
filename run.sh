@@ -91,17 +91,17 @@ nohup python main.py --model_name IMDN --scale 4 --is_PMG True --patch_size 384 
 
 #切割大小的对比实验
 nohup python main.py --model_name IMDN --scale 4 --is_PMG True --patch_size 384 --crop_piece 16 12 6 1 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_IMDN_PMG_16_12_6_1_1_L1 2>&1 &
-#
+#23604
 nohup python main.py --model_name IMDN --scale 4 --is_PMG True --patch_size 384 --crop_piece 12 6 3 1 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_IMDN_PMG_12_6_3_1_1_L1 2>&1 &
-#
+#23694
 nohup python main.py --model_name IMDN --scale 4 --is_PMG True --patch_size 384 --crop_piece 6 4 3 1 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_IMDN_PMG_6_4_3_1_1_L1 2>&1 &
-#
+#23771
 nohup python main.py --model_name IMDN --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 3 4 6 --stride 1 --loss_name 1_L1 --device cuda:1 >log/x4_IMDN_PMG_1_3_4_6_1_L1 2>&1 &
-#
+#23848
 nohup python main.py --model_name IMDN --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 3 6 12 --stride 1 --loss_name 1_L1 --device cuda:1 >log/x4_IMDN_PMG_1_3_6_12_1_L1 2>&1 &
-#
+#23925
 nohup python main.py --model_name IMDN --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 6 12 16 --stride 1 --loss_name 1_L1 --device cuda:1 >log/x4_IMDN_PMG_1_6_12_16_1_L1 2>&1 &
-#
+#24002
 
 
 #多少个阶段的对比实验
