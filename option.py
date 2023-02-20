@@ -22,13 +22,14 @@ parser.add_argument('--noise', type=str, default='.',
 parser.add_argument('--n_colors', type=int, default=3,
                     help='number of color channels to use')
 # model setting
-parser.add_argument("--model_name", type=str, default="IMDN", help="")
+parser.add_argument("--model_name", type=str, default="IMDNS", help="")
 parser.add_argument("--is_PMG", type=lambda x: x.lower() == 'true', default=True, help="")
 parser.add_argument("--is_crop", type=lambda x: x.lower() == 'true', default=True, help="")
 # parser.add_argument("--crop_piece", nargs='+', type=int, default=[6, 4, 3, 1], help="")
 parser.add_argument("--crop_piece", nargs='+', type=int, default=[16, 12, 6, 1], help="")
 # parser.add_argument("--crop_piece", nargs='+', type=int, default=[1, 3, 6, 12], help="")
-parser.add_argument("--stride", type=float, default=2, help="")
+parser.add_argument("--part", nargs='+', type=int, default=[2, 4, 6, 8], help="")
+parser.add_argument("--stride", type=float, default=2.5, help="")
 
 parser.add_argument('--n_resgroups', type=int, default=10,
                     help='number of residual groups')

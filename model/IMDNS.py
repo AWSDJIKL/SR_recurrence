@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 '''
-用于对比以往的渐进式
+对比实验，验证分多少个阶段更合适
 '''
-# @Time    : 2023/1/7 21:34
+# @Time    : 2023/1/28 19:47
 # @Author  : LINYANZHEN
-# @File    : IMDNP.py
+# @File    : IMDNS.py
 import torch
 import torch.nn as nn
 from model import common
@@ -13,10 +13,10 @@ from model import common
 def make_model(args):
     print("prepare model")
     if args.is_PMG:
-        print("IMDNP use PMG")
+        print("IMDNS use PMG")
     else:
-        print("IMDNP")
-    return IMDNP(args)
+        print("IMDNS")
+    return IMDNS(args)
 
 
 class IMDB(nn.Module):
@@ -57,30 +57,26 @@ class IMDB(nn.Module):
         return x
 
 
-class IMDNP(nn.Module):
+class IMDNS(nn.Module):
     def __init__(self, args):
-        super(IMDNP, self).__init__()
+        super(IMDNS, self).__init__()
         self.support_PMG = True
         self.head = nn.Sequential(*[common.default_conv(3, 64, 3),
                                     nn.LeakyReLU()])
         self.body = nn.Sequential(*[IMDB() for _ in range(8)])
         self.conv3 = nn.Sequential(*[common.default_conv(64, 64, 3),
                                      nn.LeakyReLU()])
-        self.tail = nn.Sequential(*[nn.Sequential(*[common.default_conv(64, 3 * 2 * 2, 3),
-                                                    nn.LeakyReLU(),
-                                                    nn.PixelShuffle(2)]),
-                                    nn.Sequential(*[common.default_conv(64, 3 * 4 * 4, 3),
-                                                    nn.LeakyReLU(),
-                                                    nn.PixelShuffle(4)])
-                                    ])
+        self.tail = nn.Sequential(*[common.default_conv(64, 3 * args.scale * args.scale, 3),
+                                    nn.LeakyReLU(),
+                                    nn.PixelShuffle(args.scale)])
+        self.part = args.part
 
-    def forward(self, x, step=1):
+    def forward(self, x, step=-1):
         x = self.head(x)
         res = x
-        for i in range(step + 1):
-            for j in range(4):
-                x = self.body[2 * i + j](x)
+        for i in range(self.part[step]):
+            x = self.body[i](x)
         x = self.conv3(x)
         x += res
-        x = self.tail[step](x)
+        x = self.tail(x)
         return x

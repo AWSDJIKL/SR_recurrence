@@ -93,8 +93,9 @@ class Trainer():
                     # jigsaws_lr, jigsaws_hr = utils.jigsaw_generator(lr, hr, lr_size, hr_size, n)
                     # lr_list.append(jigsaws_lr)
                     # hr_list.append(jigsaws_hr)
-                lr_list.append(lr)
-                hr_list.append(hr)
+                for i in range(len(lr_list)):
+                    print("----")
+                    print(lr_list[i].size())
                 for i in range(len(self.args.crop_piece)):
                     # print(lr_list[i].device)
                     # print(next(self.model.parameters()).device)
