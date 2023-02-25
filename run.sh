@@ -104,47 +104,49 @@ nohup python main.py --model_name IMDN --scale 4 --is_PMG True --patch_size 384 
 #49075
 
 #多少个阶段的对比实验
-nohup python main.py --model_name IMDNS --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 --part 8 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_IMDNS_PMG_1_1_L1 2>&1 &
-#29601
-nohup python main.py --model_name IMDNS --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 1 --part 4 8 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_IMDNS_PMG_1_1_1_L1 2>&1 &
-#29652
-nohup python main.py --model_name IMDNS --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 1 1 --part 2 4 8 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_IMDNS_PMG_1_1_1_1_L1 2>&1 &
-#29729
-nohup python main.py --model_name IMDNS --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 1 1 1 --part 2 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_IMDNS_PMG_1_1_1_1_1_L1 2>&1 &
-#30221
-nohup python main.py --model_name IMDNS --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 1 1 1 1 --part 2 3 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:1 >log/x4_IMDNS_PMG_1_1_1_1_1_1_L1 2>&1 &
-#29881
-nohup python main.py --model_name IMDNS --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 1 1 1 1 1 --part 2 3 4 5 6 8 --stride 1 --loss_name 1_L1 --device cuda:1 >log/x4_IMDNS_PMG_1_1_1_1_1_1_1_L1 2>&1 &
-#29958
-nohup python main.py --model_name IMDNS --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 1 1 1 1 1 1 --part 1 2 3 4 5 6 8 --stride 1 --loss_name 1_L1 --device cuda:1 >log/x4_IMDNS_PMG_1_1_1_1_1_1_1_1_L1 2>&1 &
-#30037
-nohup python main.py --model_name IMDNS --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 1 1 1 1 1 1 1 --part 1 2 3 4 5 6 7 8 --stride 1 --loss_name 1_L1 --device cuda:1 >log/x4_IMDNS_PMG_1_1_1_1_1_1_1_1_1_L1 2>&1 &
-#30272
+nohup python main.py --model_name IMDN_plus --scale 4 --is_PMG False --patch_size 384 --part 8 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_IMDN_plus_1_L1 2>&1 &
+#
+nohup python main.py --model_name IMDN_plus --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 --part 8 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_IMDN_plus_PMG_1_1_L1 2>&1 &
+#30819
+nohup python main.py --model_name IMDN_plus --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 1 --part 4 8 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_IMDN_plus_PMG_1_1_1_L1 2>&1 &
+#30910
+nohup python main.py --model_name IMDN_plus --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 1 1 --part 2 4 8 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_IMDN_plus_PMG_1_1_1_1_L1 2>&1 &
+#30985
+nohup python main.py --model_name IMDN_plus --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 1 1 1 --part 2 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_IMDN_plus_PMG_1_1_1_1_1_L1 2>&1 &
+#31064
+nohup python main.py --model_name IMDN_plus --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 1 1 1 1 --part 2 3 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:1 >log/x4_IMDN_plus_PMG_1_1_1_1_1_1_L1 2>&1 &
+#31141
+nohup python main.py --model_name IMDN_plus --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 1 1 1 1 1 --part 2 3 4 5 6 8 --stride 1 --loss_name 1_L1 --device cuda:1 >log/x4_IMDN_plus_PMG_1_1_1_1_1_1_1_L1 2>&1 &
+#31218
+nohup python main.py --model_name IMDN_plus --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 1 1 1 1 1 1 --part 1 2 3 4 5 6 8 --stride 1 --loss_name 1_L1 --device cuda:1 >log/x4_IMDN_plus_PMG_1_1_1_1_1_1_1_1_L1 2>&1 &
+#31293
+nohup python main.py --model_name IMDN_plus --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 1 1 1 1 1 1 1 --part 1 2 3 4 5 6 7 8 --stride 1 --loss_name 1_L1 --device cuda:1 >log/x4_IMDN_plus_PMG_1_1_1_1_1_1_1_1_1_L1 2>&1 &
+#31372
 
 
-nohup python main.py --model_name IMDNS --scale 4 --is_PMG True --patch_size 384 --crop_piece 16 12 6 1 --part 2 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_IMDNS_PMG_16_12_6_1_1_L1 2>&1 &
-#49277
-nohup python main.py --model_name IMDNS --scale 4 --is_PMG True --patch_size 384 --crop_piece 12 6 3 1 --part 2 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_IMDNS_PMG_12_6_3_1_1_L1 2>&1 &
-#49329
-nohup python main.py --model_name IMDNS --scale 4 --is_PMG True --patch_size 384 --crop_piece 6 4 3 1 --part 2 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_IMDNS_PMG_6_4_3_1_1_L1 2>&1 &
-#49406
-nohup python main.py --model_name IMDNS --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 3 4 6 --part 2 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:1 >log/x4_IMDNS_PMG_1_3_4_6_1_L1 2>&1 &
-#49483
-nohup python main.py --model_name IMDNS --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 3 6 12 --part 2 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:1 >log/x4_IMDNS_PMG_1_3_6_12_1_L1 2>&1 &
-#49584
-nohup python main.py --model_name IMDNS --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 6 12 16 --part 2 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:1 >log/x4_IMDNS_PMG_1_6_12_16_1_L1 2>&1 &
-#49637
+nohup python main.py --model_name IMDN_plus --scale 4 --is_PMG True --patch_size 384 --crop_piece 16 12 6 1 --part 2 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_IMDN_plus_PMG_16_12_6_1_1_L1 2>&1 &
+#40875
+nohup python main.py --model_name IMDN_plus --scale 4 --is_PMG True --patch_size 384 --crop_piece 12 6 3 1 --part 2 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_IMDN_plus_PMG_12_6_3_1_1_L1 2>&1 &
+#40954
+nohup python main.py --model_name IMDN_plus --scale 4 --is_PMG True --patch_size 384 --crop_piece 6 4 3 1 --part 2 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_IMDN_plus_PMG_6_4_3_1_1_L1 2>&1 &
+#41031
+nohup python main.py --model_name IMDN_plus --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 3 4 6 --part 2 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:1 >log/x4_IMDN_plus_PMG_1_3_4_6_1_L1 2>&1 &
+#41108
+nohup python main.py --model_name IMDN_plus --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 3 6 12 --part 2 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:1 >log/x4_IMDN_plus_PMG_1_3_6_12_1_L1 2>&1 &
+#41183
+nohup python main.py --model_name IMDN_plus --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 6 12 16 --part 2 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:1 >log/x4_IMDN_plus_PMG_1_6_12_16_1_L1 2>&1 &
+#41260
 
 #假设统一使用5阶段，重跑划分大小实验
-nohup python main.py --model_name IMDNS --scale 4 --is_PMG True --patch_size 384 --crop_piece 16 12 6 3 1 --part 2 3 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_IMDNS_PMG_16_12_6_3_1_1_L1 2>&1 &
-#51103
-nohup python main.py --model_name IMDNS --scale 4 --is_PMG True --patch_size 384 --crop_piece 12 8 6 3 1 --part 2 3 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_IMDNS_PMG_12_8_6_3_1_1_L1 2>&1 &
-#51182
-nohup python main.py --model_name IMDNS --scale 4 --is_PMG True --patch_size 384 --crop_piece 8 6 4 3 1 --part 2 3 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_IMDNS_PMG_8_6_4_3_1_1_L1 2>&1 &
-#81259
-nohup python main.py --model_name IMDNS --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 3 4 6 8 --part 2 3 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:1 >log/x4_IMDNS_PMG_1_3_4_6_8_1_L1 2>&1 &
-#51336
-nohup python main.py --model_name IMDNS --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 3 6 8 12 --part 2 3 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:1 >log/x4_IMDNS_PMG_1_3_6_8_12_1_L1 2>&1 &
-#51413
-nohup python main.py --model_name IMDNS --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 3 6 12 16 --part 2 3 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:1 >log/x4_IMDNS_PMG_1_3_6_12_16_1_L1 2>&1 &
-#51491
+nohup python main.py --model_name IMDN_plus --scale 4 --is_PMG True --patch_size 384 --crop_piece 16 12 6 3 1 --part 2 3 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_IMDN_plus_PMG_16_12_6_3_1_1_L1 2>&1 &
+#31451
+nohup python main.py --model_name IMDN_plus --scale 4 --is_PMG True --patch_size 384 --crop_piece 12 8 6 3 1 --part 2 3 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_IMDN_plus_PMG_12_8_6_3_1_1_L1 2>&1 &
+#31526
+nohup python main.py --model_name IMDN_plus --scale 4 --is_PMG True --patch_size 384 --crop_piece 8 6 4 3 1 --part 2 3 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_IMDN_plus_PMG_8_6_4_3_1_1_L1 2>&1 &
+#31603
+nohup python main.py --model_name IMDN_plus --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 3 4 6 8 --part 2 3 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:1 >log/x4_IMDN_plus_PMG_1_3_4_6_8_1_L1 2>&1 &
+#31656
+nohup python main.py --model_name IMDN_plus --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 3 6 8 12 --part 2 3 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:1 >log/x4_IMDN_plus_PMG_1_3_6_8_12_1_L1 2>&1 &
+#31733
+nohup python main.py --model_name IMDN_plus --scale 4 --is_PMG True --patch_size 384 --crop_piece 1 3 6 12 16 --part 2 3 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:1 >log/x4_IMDN_plus_PMG_1_3_6_12_16_1_L1 2>&1 &
+#31810
