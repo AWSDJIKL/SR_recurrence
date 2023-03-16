@@ -30,13 +30,31 @@ class DIV2K(srdata.SRData):
         lr_list = []
         # 当需要同时训练多个放大倍率时需要的
         hr_list = []
-        for i in range(800):
-            if self.args.data_type.find('npy') >= 0 and not self.args.data_type.find('reset') >= 0:
-                lr_list.append(os.path.join(self.lr_dir, "{}.npy".format(i)))
-                hr_list.append(os.path.join(self.hr_dir, "{}.npy".format(i)))
-            else:
-                lr_list.append(os.path.join(self.lr_dir, "{}.png".format(i)))
-                hr_list.append(os.path.join(self.hr_dir, "{}.png".format(i)))
+        if self.args.data_type.find('npy') >= 0 and not self.args.data_type.find('reset') >= 0:
+            for root, dirs, files in os.walk(self.lr_dir):
+                for file in files:
+                    if file[-3:] == "npy":
+                        lr_list.append(os.path.join(self.lr_dir,file))
+            for root, dirs, files in os.walk(self.hr_dir):
+                for file in files:
+                    if file[-3:] == "npy":
+                        hr_list.append(os.path.join(self.hr_dir,file))
+        else:
+            for root, dirs, files in os.walk(self.lr_dir):
+                for file in files:
+                    if file[-3:] == "png":
+                        lr_list.append(os.path.join(self.lr_dir,file))
+            for root, dirs, files in os.walk(self.hr_dir):
+                for file in files:
+                    if file[-3:] == "png":
+                        hr_list.append(os.path.join(self.hr_dir,file))
+        # for i in range(800):
+        #     if self.args.data_type.find('npy') >= 0 and not self.args.data_type.find('reset') >= 0:
+        #         lr_list.append(os.path.join(self.lr_dir, "{}.npy".format(i)))
+        #         hr_list.append(os.path.join(self.hr_dir, "{}.npy".format(i)))
+        #     else:
+        #         lr_list.append(os.path.join(self.lr_dir, "{}.png".format(i)))
+        #         hr_list.append(os.path.join(self.hr_dir, "{}.png".format(i)))
 
         return lr_list, hr_list
 

@@ -143,20 +143,27 @@ def get_hr_list(dataset):
     return hr_list
 
 
-def prepare_npy(hr_list, scale, save_path):
+def prepare_npy(hr_list, scale, save_path, skip_small=False):
     print("开始准备{}倍超分辨率数据集".format(scale))
     lr_save_path = os.path.join(save_path, "lr")
     hr_save_path = os.path.join(save_path, "hr")
-    if not os.path.exists(save_path):
-        os.mkdir(save_path)
-        os.mkdir(lr_save_path)
-        os.mkdir(hr_save_path)
+    if os.path.exists(save_path):
+        shutil.rmtree(save_path)
+    os.mkdir(save_path)
+    os.mkdir(lr_save_path)
+    os.mkdir(hr_save_path)
     i = 0
     process = tqdm.tqdm(hr_list)
     for hr in process:
         hr = Image.open(hr)
         hr_width = hr.width
         hr_height = hr.height
+        # 放弃小于1000的图
+        if skip_small:
+            if hr_height < 1000 or hr_width < 1000:
+                print("skip", i)
+                i += 1
+                continue
         # 计算出lr与hr的大小
         lr_width = hr_width // scale
         lr_height = hr_height // scale
@@ -177,15 +184,16 @@ def prepare_npy(hr_list, scale, save_path):
 
 if __name__ == '__main__':
     # ssl._create_default_https_context = ssl._create_unverified_context
-    print("开始下载数据集")
-    dataset_path = "dataset"
-    download_datasets(dataset_path)
-    print("所有数据集下载完成")
+    # print("开始下载数据集")
+    # dataset_path = "dataset"
+    # download_datasets(dataset_path)
+    # print("所有数据集下载完成")
 
-    # print("开始生成数据集")
-    # for dataset in ["Set5", "Set14", "BSD100", "Urban100", "DIV2K_train_HR","Flickr2K"]:
-    #     print(dataset)
-    #     for scale in [4, 8]:
-    #         hr_list = get_hr_list(dataset)
-    #         prepare_npy(hr_list, scale, "dataset/{}/x{}".format(dataset, scale))
-    # print("数据集准备完成")
+    print("开始生成数据集")
+    for dataset, skip_small in zip(["Set5", "Set14", "BSD100", "Urban100", "DIV2K_train_HR"],
+                                   [False, False, False, False, True]):
+        print(dataset)
+        for scale in [4]:
+            hr_list = get_hr_list(dataset)
+            prepare_npy(hr_list, scale, "dataset/{}/x{}".format(dataset, scale), skip_small)
+    print("数据集准备完成")
