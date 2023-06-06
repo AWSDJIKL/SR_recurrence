@@ -236,7 +236,6 @@ class RFDN(nn.Module):
         out_lr = self.LR_conv(out_B) + res
 
         output = self.upsampler(out_lr)
-
         return output
         # out_fea = self.fea_conv(x)
         # out_B1 = self.B1(out_fea)

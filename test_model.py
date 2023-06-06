@@ -41,6 +41,8 @@ def model_test(model, test_loader):
     psnr /= len(test_loader)
     ssim /= len(test_loader)
     # lpips /= len(test_loader)
+    psnr= round(psnr, 2)
+    ssim= round(ssim, 4)
     return psnr, ssim
 
 
@@ -63,6 +65,8 @@ def test_bicubic(test_loader, scale=4):
         #     imageio.imsave(os.path.join("img_test/bicubic", "{}.png".format(name)), ndarr)
     psnr /= len(test_loader)
     ssim /= len(test_loader)
+    psnr = round(psnr, 2)
+    ssim = round(ssim, 4)
     return psnr, ssim
 
 
@@ -73,22 +77,61 @@ if __name__ == '__main__':
         "BSD100",
         "Urban100"
     ]
+
     # 各个模型名字与路径名
     model_list = {
-        # "bicubic": "",
-        # "SRCNN_1_L1": "SRCNN",
-        # "FSRCNN_1_L1": "FSRCNN",
-        # "ESPCN_1_L1": "ESPCN",
-        # "RCAN_1_L1": "RCAN",
-        "MSRN_1_L1": "MSRN",
-        # "MSRN_PMG_1_L1": "MSRN_PMG",
-        # "MSRN_OLD_PMG_OLD_PMG_1_L1": "MSRN_OLD_PMG",
-        # "MSRN_PMG_PMG_no_crop_1_L1": "MSRN_PMG",
-        # "MSRN_PMG_PMG_1_L1": "MSRN_PMG",
+        "bicubic": "",
+        "x4_SRCNN": "SRCNN",
+        "x4_SRCNN_PMG_12_6_1_stride1.0": "SRCNN",
+        "x4_ESPCN": "ESPCN",
+        "x4_ESPCN_PMG_12_6_1_stride1.0": "ESPCN",
+        "x4_EDSR": "EDSR",
+        "x4_EDSR_PMG_12_6_3_1_stride1.0": "EDSR",
+        "x4_MSRN": "MSRN",
+        "x4_MSRN_PMG_12_6_3_1_stride1.0": "MSRN",
+        "x4_RFDN": "RFDN",
+        "x4_RFDN_PMG_12_6_3_1_stride1.0": "RFDN",
+        "x4_VDSR": "VDSR",
+        "x4_VDSR_PMG_12_6_1_stride1.0": "VDSR",
+        "x4_IMDN_plus": "IMDN_plus",
+        "x4_IMDN_plus_PMG_12_8_6_3_1_stride1.0": "IMDN_plus",
     }
+
+    # # 分阶段的实验
+    # model_list = {
+    #     "x4_IMDN_plus": "IMDN_plus",
+    #     "x4_IMDN_plus_PMG_1_1_stride1.0": "IMDN_plus",
+    #     "x4_IMDN_plus_PMG_1_1_1_stride1.0": "IMDN_plus",
+    #     "x4_IMDN_plus_PMG_1_1_1_1_stride1.0": "IMDN_plus",
+    #     "x4_IMDN_plus_PMG_1_1_1_1_1_stride1.0": "IMDN_plus",
+    #     "x4_IMDN_plus_PMG_1_1_1_1_1_1_stride1.0": "IMDN_plus",
+    #     "x4_IMDN_plus_PMG_1_1_1_1_1_1_1_stride1.0": "IMDN_plus",
+    #     "x4_IMDN_plus_PMG_1_1_1_1_1_1_1_1_stride1.0": "IMDN_plus",
+    # }
+
+    # # 划分大小的实验
+    # model_list = {
+    #     "x4_IMDN_plus_PMG_1_1_1_1_1_stride1.0": "IMDN_plus",
+    #     "x4_IMDN_plus_PMG_16_12_6_3_1_stride1.0": "IMDN_plus",
+    #     "x4_IMDN_plus_PMG_12_8_6_3_1_stride1.0": "IMDN_plus",
+    #     "x4_IMDN_plus_PMG_8_6_4_3_1_stride1.0": "IMDN_plus",
+    #     "x4_IMDN_plus_PMG_1_3_4_6_8_stride1.0": "IMDN_plus",
+    #     "x4_IMDN_plus_PMG_1_3_6_8_12_stride1.0": "IMDN_plus",
+    #     "x4_IMDN_plus_PMG_1_3_6_12_16_stride1.0": "IMDN_plus",
+    # }
+
+    # # stride的实验
+    # model_list = {
+    #     "x4_IMDN_plus_PMG_12_8_6_3_1_stride0.5": "IMDN_plus",
+    #     "x4_IMDN_plus_PMG_12_8_6_3_1_stride1.0": "IMDN_plus",
+    #     "x4_IMDN_plus_PMG_12_8_6_3_1_stride1.5": "IMDN_plus",
+    #     "x4_IMDN_plus_PMG_12_8_6_3_1_stride2.0": "IMDN_plus",
+    #     "x4_IMDN_plus_PMG_12_8_6_3_1_stride2.5": "IMDN_plus",
+    # }
+
     # 新建一个dataframe保存每个模型的结果
 
-    for scale_factor in [4,8]:
+    for scale_factor in [4]:
         args.scale = scale_factor
         print(args.scale)
         df = pd.DataFrame({"model": model_list.keys()})
@@ -104,8 +147,8 @@ if __name__ == '__main__':
                 if model_path == "bicubic":
                     psnr, ssim = test_bicubic(test_loader, scale=scale_factor)
                 else:
-                    model_path = "checkpoint/x{}_{}/model/final.pth".format(scale_factor, model_path)
-                    state_dict = torch.load(model_path)
+                    model_path = "checkpoint/{}/model/final.pth".format(model_path)
+                    state_dict = torch.load(model_path, map_location="cuda:0")
                     test_model = model.get_model(model_name, args)
                     test_model.load_state_dict(state_dict)
                     psnr, ssim = model_test(test_model, test_loader)
@@ -116,3 +159,6 @@ if __name__ == '__main__':
             df.insert(len(df.columns), test_set_name + "_PSNR", psnr_list)
             df.insert(len(df.columns), test_set_name + "_SSIM", ssim_list)
         df.to_csv("checkpoint/x{}_test_result.csv".format(scale_factor), index=False)
+        # df.to_csv("checkpoint/x{}_stages_test_result.csv".format(scale_factor), index=False)
+        # df.to_csv("checkpoint/x{}_crop_size_test_result.csv".format(scale_factor), index=False)
+        # df.to_csv("checkpoint/x{}_stride_test_result.csv".format(scale_factor), index=False)

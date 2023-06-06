@@ -60,6 +60,7 @@ class Trainer():
             self.model.load_state_dict(checkpoint)
 
     def train_and_test(self):
+        start_time = time.time()
         epoch = self.scheduler.last_epoch + 1
         learn_percent = 0.5 + 0.1 * (epoch // 40)
         lr = self.scheduler.get_last_lr()[0]
@@ -134,6 +135,9 @@ class Trainer():
         epoch_psnr /= len(self.test_loader)
         self.scheduler.step()
         self.checkpoint.record_epoch(epoch, epoch_loss, epoch_psnr, self.optimizer, self.scheduler)
+        end_time = time.time()
+        total_time = end_time - start_time
+        self.checkpoint.write_log("epoch time={}s".format(total_time))
 
     def prepare(self, tensor):
         if self.half_precision:
