@@ -53,13 +53,15 @@ class ESPCN(nn.Module):
             nn.Conv2d(32, 3 * (args.scale ** 2), (3, 3), padding=(1, 1)),
         ]
         self.channel_adaptive = nn.Sequential(*channel_adaptive)
-
         self.pixel_shuffle = nn.PixelShuffle(args.scale)
+        self.part = args.part
 
-    def forward(self, x, step=2):
-        for i in range(step + 1):
+    def forward(self, x, step=-1):
+        # for i in range(step + 1):
+        #     x = self.body[i](x)
+        for i in range(self.part[step]):
             x = self.body[i](x)
-        if step < 2:
+        if 0 <= step < 2:
             x = self.channel_adaptive[step](x)
         x = self.pixel_shuffle(x)
         return x

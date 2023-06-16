@@ -14,7 +14,7 @@ parser.add_argument("--test_set", type=str, default="Set5", help="test set name"
 parser.add_argument("--scale", type=int, default=4, help="")
 parser.add_argument("--data_type", type=str, default="npy", help="")
 parser.add_argument("--batch_size", type=int, default=4, help="")
-parser.add_argument("--patch_size", type=int, default=768, help="")
+parser.add_argument("--patch_size", type=int, default=384, help="")
 parser.add_argument("--rgb_range", type=int, default=255, help="")
 parser.add_argument("--n_color", type=int, default=3, help="")
 parser.add_argument('--noise', type=str, default='.',
@@ -22,13 +22,17 @@ parser.add_argument('--noise', type=str, default='.',
 parser.add_argument('--n_colors', type=int, default=3,
                     help='number of color channels to use')
 # model setting
-parser.add_argument("--model_name", type=str, default="IMDN_plus", help="")
+parser.add_argument("--model_name", type=str, default="EDSR", help="")
 parser.add_argument("--is_PMG", type=lambda x: x.lower() == 'true', default=True, help="")
 parser.add_argument("--is_crop", type=lambda x: x.lower() == 'true', default=True, help="")
-# parser.add_argument("--crop_piece", nargs='+', type=int, default=[6, 4, 3, 1], help="")
-parser.add_argument("--crop_piece", nargs='+', type=int, default=[12, 8, 6, 3, 1], help="")
-# parser.add_argument("--crop_piece", nargs='+', type=int, default=[1, 3, 6, 12], help="")
-parser.add_argument("--part", nargs='+', type=int, default=[2, 3, 4, 6, 8], help="")
+
+parser.add_argument("--crop_piece", nargs='+', type=int, default=[16, 6, 1], help="")
+parser.add_argument("--part", nargs='+', type=int, default=[1, 2, 3], help="")
+# parser.add_argument("--crop_piece", nargs='+', type=int, default=[12, 8, 6, 3, 1], help="")
+# parser.add_argument("--part", nargs='+', type=int, default=[2, 3, 4, 6, 8], help="")
+# parser.add_argument("--crop_piece", nargs='+', type=int, default=[12, 6, 3, 1], help="")
+# parser.add_argument("--part", nargs='+', type=int, default=[2, 4, 6, 8], help="")
+
 parser.add_argument("--stride", type=float, default=1, help="")
 
 parser.add_argument('--n_resgroups', type=int, default=10,
@@ -50,7 +54,7 @@ parser.add_argument("--epoch", type=int, default=1000, help="")
 parser.add_argument('--test_every', type=int, default=1000,
                     help='do test per every N batches')
 parser.add_argument("--seed", type=int, default=100, help="")
-parser.add_argument("--num_workers", type=int, default=12, help="")
+parser.add_argument("--num_workers", type=int, default=0, help="")
 parser.add_argument("--device", type=str, default="cuda:0",
                     help="use which device to train")
 parser.add_argument("--half_precision", type=lambda x: x.lower() == 'true', default=False,

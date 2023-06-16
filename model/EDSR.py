@@ -13,9 +13,9 @@ from model import common
 def make_model(args):
     print("prepare model")
     if args.is_PMG:
-        print("VDSR use PMG")
+        print("EDSR use PMG")
     else:
-        print("VDSR")
+        print("EDSR")
     return EDSR(args)
 
 
@@ -55,14 +55,17 @@ class EDSR(nn.Module):
         self.head = nn.Sequential(*m_head)
         self.body = nn.Sequential(*m_body)
         self.tail = nn.Sequential(*m_tail)
+        self.part = args.part
 
-    def forward(self, x, step=3):
+    def forward(self, x, step=-1):
         x = self.sub_mean(x)
         x = self.head(x)
         res = x
-        for i in range(step + 1):
-            for j in range(4):
-                res = self.body[4 * i + j](res)
+        for i in range(self.part[step]):
+            res = self.body[i](res)
+        # for i in range(step + 1):
+        #     for j in range(4):
+        #         res = self.body[4 * i + j](res)
         res = self.body[-1](res)
         res += x
 

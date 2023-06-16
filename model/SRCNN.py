@@ -49,11 +49,14 @@ class SRCNN(nn.Module):
             nn.Conv2d(32, 3, (3, 3), padding=(1, 1)),
         ]
         self.channel_adaptive = nn.Sequential(*channel_adaptive)
+        self.part = args.part
 
-    def forward(self, x, step=2):
+    def forward(self, x, step=-1):
         x = self.upsample(x)
-        for i in range(step + 1):
+        for i in range(self.part[step]):
             x = self.cnn[i](x)
-        if step < 2:
+        # for i in range(step + 1):
+        #     x = self.cnn[i](x)
+        if 0 <= step < 2:
             x = self.channel_adaptive[step](x)
         return x

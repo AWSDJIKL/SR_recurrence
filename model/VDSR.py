@@ -40,15 +40,18 @@ class VDSR(nn.Module):
         modules_body = [Conv_ReLU_Block() for _ in range(18)]
         self.body = nn.Sequential(*modules_body)
         self.upsample = nn.Upsample(scale_factor=args.scale)
+        self.part = args.part
 
-    def forward(self, x, step=2):
+    def forward(self, x, step=-1):
         x = self.upsample(x)
         residual = x
         x = self.conv_in(x)
         x = self.relu(x)
-        for i in range(step + 1):
-            for j in range(6):
-                x = self.body[6 * i + j](x)
+        for i in range(self.part[step]):
+            x = self.body[i](x)
+        # for i in range(step + 1):
+        #     for j in range(6):
+        #         x = self.body[6 * i + j](x)
         x = self.conv_out(x)
         x = torch.add(x, residual)
         return x
