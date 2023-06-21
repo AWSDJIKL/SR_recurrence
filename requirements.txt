@@ -1,0 +1,13 @@
+imageio
+matplotlib
+numpy
+pandas
+Pillow
+scikit_image
+scipy
+timm
+torch
+torchsummary
+torchvision
+tqdm
+wget

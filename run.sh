@@ -123,26 +123,26 @@ nohup python main.py --model_name IMDN_plus --scale 4 --is_PMG True --patch_size
 
 #验证stride影响
 nohup python main.py --model_name IMDN_plus --scale 4 --is_PMG True --patch_size 768 --crop_piece 16 12 6 3 1 --part 2 3 4 6 8 --stride 0.5 --loss_name 1_L1 --device cuda:0 >log/x4_IMDN_plus_PMG_16_12_6_3_1_0p5_L1 2>&1 &
-#
+#3333
 nohup python main.py --model_name IMDN_plus --scale 4 --is_PMG True --patch_size 768 --crop_piece 16 12 6 3 1 --part 2 3 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_IMDN_plus_PMG_16_12_6_3_1_1_L1 2>&1 &
-#
+#3383
 nohup python main.py --model_name IMDN_plus --scale 4 --is_PMG True --patch_size 768 --crop_piece 16 12 6 3 1 --part 2 3 4 6 8 --stride 1.5 --loss_name 1_L1 --device cuda:0 >log/x4_IMDN_plus_PMG_16_12_6_3_1_1p5_L1 2>&1 &
-#
+#3453
 nohup python main.py --model_name IMDN_plus --scale 4 --is_PMG True --patch_size 768 --crop_piece 16 12 6 3 1 --part 2 3 4 6 8 --stride 2 --loss_name 1_L1 --device cuda:0 >log/x4_IMDN_plus_PMG_16_12_6_3_1_2_L1 2>&1 &
-#
+#3556
 nohup python main.py --model_name IMDN_plus --scale 4 --is_PMG True --patch_size 768 --crop_piece 16 12 6 3 1 --part 2 3 4 6 8 --stride 2.5 --loss_name 1_L1 --device cuda:0 >log/x4_IMDN_plus_PMG_16_12_6_3_1_2p5_L1 2>&1 &
-#
+#3633
 
 #最后统一对照实验（按照16,12,6,3,1的模式）
-nohup python main.py --model_name SRCNN --scale 4 --is_PMG True --patch_size 768 --crop_piece 16 6 1 --part 1 2 3 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_SRCNN_PMG_16_6_1_1_L1 2>&1 &
-#
-nohup python main.py --model_name ESPCN --scale 4 --is_PMG True --patch_size 768 --crop_piece 16 6 1 --part 1 2 3 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_ESPCN_PMG_16_6_1_1_L1 2>&1 &
-#
-nohup python main.py --model_name VDSR --scale 4 --is_PMG True --patch_size 768 --crop_piece 16 12 6 3 1 --part 2 3 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_VDSR_PMG_16_12_6_3_1_1_L1 2>&1 &
-#
+nohup python main.py --model_name SRCNN --scale 4 --is_PMG True --patch_size 768 --crop_piece 16 6 1 --part 1 2 3 --stride 1 --loss_name 1_L1 --device cuda:1 >log/x4_SRCNN_PMG_16_6_1_1_L1 2>&1 &
+#3736
+nohup python main.py --model_name ESPCN --scale 4 --is_PMG True --patch_size 768 --crop_piece 16 6 1 --part 1 2 3 --stride 1 --loss_name 1_L1 --device cuda:1 >log/x4_ESPCN_PMG_16_6_1_1_L1 2>&1 &
+#3787
+nohup python main.py --model_name VDSR --scale 4 --is_PMG True --patch_size 768 --crop_piece 16 12 6 3 1 --part 2 3 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:1 >log/x4_VDSR_PMG_16_12_6_3_1_1_L1 2>&1 &
+#3864
 nohup python main.py --model_name EDSR --scale 4 --is_PMG True --patch_size 768 --crop_piece 16 12 6 3 1 --part 2 3 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:1 >log/x4_EDSR_PMG_16_12_6_3_1_1_L1 2>&1 &
-#
+#3941
 nohup python main.py --model_name MSRN --scale 4 --is_PMG True --patch_size 768 --crop_piece 12 6 3 1 --part 2 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:1 >log/x4_MSRN_PMG_12_6_3_1_1_L1 2>&1 &
-#
+#4016
 nohup python main.py --model_name RFDN --scale 4 --is_PMG True --patch_size 768 --crop_piece 12 6 3 1 --part 1 2 3 4 --stride 1 --loss_name 1_L1 --device cuda:1 >log/x4_RFDN_PMG_12_6_3_1_1_L1 2>&1 &
-#
+#4069
