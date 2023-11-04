@@ -109,17 +109,17 @@ nohup python main.py --model_name IMDN_plus --scale 4 --is_PMG True --patch_size
 
 #假设统一使用5阶段，重跑划分大小实验
 nohup python main.py --model_name IMDN_plus --scale 4 --is_PMG True --patch_size 768 --crop_piece 16 12 6 3 1 --part 2 3 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_IMDN_plus_PMG_16_12_6_3_1_1_L1 2>&1 &
-#31451
+#21372
 nohup python main.py --model_name IMDN_plus --scale 4 --is_PMG True --patch_size 768 --crop_piece 12 8 6 3 1 --part 2 3 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_IMDN_plus_PMG_12_8_6_3_1_1_L1 2>&1 &
-#31526
+#21436
 nohup python main.py --model_name IMDN_plus --scale 4 --is_PMG True --patch_size 768 --crop_piece 8 6 4 3 1 --part 2 3 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_IMDN_plus_PMG_8_6_4_3_1_1_L1 2>&1 &
-#31603
-nohup python main.py --model_name IMDN_plus --scale 4 --is_PMG True --patch_size 768 --crop_piece 1 3 4 6 8 --part 2 3 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:1 >log/x4_IMDN_plus_PMG_1_3_4_6_8_1_L1 2>&1 &
-#31656
-nohup python main.py --model_name IMDN_plus --scale 4 --is_PMG True --patch_size 768 --crop_piece 1 3 6 8 12 --part 2 3 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:1 >log/x4_IMDN_plus_PMG_1_3_6_8_12_1_L1 2>&1 &
-#31733
-nohup python main.py --model_name IMDN_plus --scale 4 --is_PMG True --patch_size 768 --crop_piece 1 3 6 12 16 --part 2 3 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:1 >log/x4_IMDN_plus_PMG_1_3_6_12_16_1_L1 2>&1 &
-#31810
+#21497
+nohup python main.py --model_name IMDN_plus --scale 4 --is_PMG True --patch_size 768 --crop_piece 1 3 4 6 8 --part 2 3 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_IMDN_plus_PMG_1_3_4_6_8_1_L1 2>&1 &
+#21558
+nohup python main.py --model_name IMDN_plus --scale 4 --is_PMG True --patch_size 768 --crop_piece 1 3 6 8 12 --part 2 3 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_IMDN_plus_PMG_1_3_6_8_12_1_L1 2>&1 &
+#21619
+nohup python main.py --model_name IMDN_plus --scale 4 --is_PMG True --patch_size 768 --crop_piece 1 3 6 12 16 --part 2 3 4 6 8 --stride 1 --loss_name 1_L1 --device cuda:0 >log/x4_IMDN_plus_PMG_1_3_6_12_16_1_L1 2>&1 &
+#21680
 
 #验证stride影响
 nohup python main.py --model_name IMDN_plus --scale 4 --is_PMG True --patch_size 768 --crop_piece 16 12 6 3 1 --part 2 3 4 6 8 --stride 0.5 --loss_name 1_L1 --device cuda:0 >log/x4_IMDN_plus_PMG_16_12_6_3_1_0p5_L1 2>&1 &

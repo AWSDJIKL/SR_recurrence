@@ -41,8 +41,8 @@ def model_test(model, test_loader):
     psnr /= len(test_loader)
     ssim /= len(test_loader)
     # lpips /= len(test_loader)
-    psnr= round(psnr, 2)
-    ssim= round(ssim, 4)
+    psnr = round(psnr, 2)
+    ssim = round(ssim, 4)
     return psnr, ssim
 
 
@@ -78,36 +78,36 @@ if __name__ == '__main__':
         "Urban100"
     ]
 
-    # 各个模型名字与路径名
-    model_list = {
-        "bicubic": "",
-        "x4_SRCNN": "SRCNN",
-        "x4_SRCNN_PMG_12_6_1_stride1.0": "SRCNN",
-        "x4_ESPCN": "ESPCN",
-        "x4_ESPCN_PMG_12_6_1_stride1.0": "ESPCN",
-        "x4_EDSR": "EDSR",
-        "x4_EDSR_PMG_12_6_3_1_stride1.0": "EDSR",
-        "x4_MSRN": "MSRN",
-        "x4_MSRN_PMG_12_6_3_1_stride1.0": "MSRN",
-        "x4_RFDN": "RFDN",
-        "x4_RFDN_PMG_12_6_3_1_stride1.0": "RFDN",
-        "x4_VDSR": "VDSR",
-        "x4_VDSR_PMG_12_6_1_stride1.0": "VDSR",
-        "x4_IMDN_plus": "IMDN_plus",
-        "x4_IMDN_plus_PMG_12_8_6_3_1_stride1.0": "IMDN_plus",
-    }
-
-    # # 分阶段的实验
+    # # 各个模型名字与路径名
     # model_list = {
+    #     "bicubic": "",
+    #     "x4_SRCNN": "SRCNN",
+    #     "x4_SRCNN_PMG_12_6_1_stride1.0": "SRCNN",
+    #     "x4_ESPCN": "ESPCN",
+    #     "x4_ESPCN_PMG_12_6_1_stride1.0": "ESPCN",
+    #     "x4_EDSR": "EDSR",
+    #     "x4_EDSR_PMG_12_6_3_1_stride1.0": "EDSR",
+    #     "x4_MSRN": "MSRN",
+    #     "x4_MSRN_PMG_12_6_3_1_stride1.0": "MSRN",
+    #     "x4_RFDN": "RFDN",
+    #     "x4_RFDN_PMG_12_6_3_1_stride1.0": "RFDN",
+    #     "x4_VDSR": "VDSR",
+    #     "x4_VDSR_PMG_12_6_1_stride1.0": "VDSR",
     #     "x4_IMDN_plus": "IMDN_plus",
-    #     "x4_IMDN_plus_PMG_1_1_stride1.0": "IMDN_plus",
-    #     "x4_IMDN_plus_PMG_1_1_1_stride1.0": "IMDN_plus",
-    #     "x4_IMDN_plus_PMG_1_1_1_1_stride1.0": "IMDN_plus",
-    #     "x4_IMDN_plus_PMG_1_1_1_1_1_stride1.0": "IMDN_plus",
-    #     "x4_IMDN_plus_PMG_1_1_1_1_1_1_stride1.0": "IMDN_plus",
-    #     "x4_IMDN_plus_PMG_1_1_1_1_1_1_1_stride1.0": "IMDN_plus",
-    #     "x4_IMDN_plus_PMG_1_1_1_1_1_1_1_1_stride1.0": "IMDN_plus",
+    #     "x4_IMDN_plus_PMG_12_8_6_3_1_stride1.0": "IMDN_plus",
     # }
+
+    # 分阶段的实验
+    model_list = {
+        "x4_IMDN_plus": "IMDN_plus",
+        "x4_IMDN_plus_PMG_1_1_stride1.0": "IMDN_plus",
+        "x4_IMDN_plus_PMG_1_1_1_stride1.0": "IMDN_plus",
+        "x4_IMDN_plus_PMG_1_1_1_1_stride1.0": "IMDN_plus",
+        "x4_IMDN_plus_PMG_1_1_1_1_1_stride1.0": "IMDN_plus",
+        "x4_IMDN_plus_PMG_1_1_1_1_1_1_stride1.0": "IMDN_plus",
+        "x4_IMDN_plus_PMG_1_1_1_1_1_1_1_stride1.0": "IMDN_plus",
+        "x4_IMDN_plus_PMG_1_1_1_1_1_1_1_1_stride1.0": "IMDN_plus",
+    }
 
     # # 划分大小的实验
     # model_list = {
@@ -144,6 +144,13 @@ if __name__ == '__main__':
             # 逐个导入模型并测试超分辨率结果，保存到文件夹中
             for model_path, model_name in model_list.items():
                 print(model_path)
+                with open('checkpoint/{}/option.txt'.format(model_path), 'r') as f:
+                    lines = f.readlines()
+                args_dict = {}
+                for line in lines:
+                    key, value = line.split(' ', 1)
+                    args_dict[key] = value
+                args.part = eval(args_dict['part'])
                 if model_path == "bicubic":
                     psnr, ssim = test_bicubic(test_loader, scale=scale_factor)
                 else:

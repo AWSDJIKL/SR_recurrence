@@ -21,29 +21,15 @@ import torchvision.transforms
 import pandas as pd
 
 if __name__ == '__main__':
-    x = torch.randn(1, 64, 4, 0)
-    print(x)
-    # with open("test.txt", "r", encoding="utf8") as file:
-    #     place_num_dict = {}
-    #     for line in file.readlines():
-    #         places_pattern = re.compile("[\u4e00-\u9fa5]+")
-    #         num_pattern = re.compile("[0-9]+")
-    #         places = places_pattern.findall(line)
-    #         num = num_pattern.findall(line)
-    #         # print(places)
-    #         # print(num)
-    #
-    #         for i in range(len(places)):
-    #             if places[i] not in place_num_dict.keys():
-    #                 place_num_dict[places[i]] = int(num[i])
-    #             else:
-    #                 place_num_dict[places[i]] += int(num[i])
-    #     df=pd.DataFrame(columns=place_num_dict.keys())
-    #     # print(df)
-    #     sum=0
-    #     for k,v in place_num_dict.items():
-    #         sum+=v
-    #         print(k,v)
-    #         df[k]=v
-    #     # print(df)
-    #     print(sum)
+    print(args.part)
+    # 打开文件并读取每一行
+    with open('checkpoint/x4_IMDN_plus_PMG_1_1_stride1.0/option.txt', 'r') as f:
+        lines = f.readlines()
+    # 创建空字典，并将每一行转换为键值对存入字典
+    args_dict = {}
+    for line in lines:
+        key, value = line.split(' ', 1)
+        args_dict[key] = value
+    args.part = args_dict['part']
+    # args.part = eval(args_dict['part'])
+    print(type(args.part))

@@ -181,7 +181,9 @@ class Trainer():
         elif self.args.optimizer == 'RMSprop':
             optimizer_function = optim.RMSprop
             kwargs = {'eps': self.args.epsilon}
-
+        else:
+            print("Not supported optimizer: {}.".format(self.args.optimizer))
+            raise NotImplementedError
         kwargs['lr'] = self.args.lr
         kwargs['weight_decay'] = self.args.weight_decay
 
