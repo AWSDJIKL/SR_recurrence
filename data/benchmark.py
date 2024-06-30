@@ -34,11 +34,13 @@ class Benchmark(srdata.SRData):
             dataset_size = 500
         elif self.args.test_set in ["BSD100", "Urban100"]:
             dataset_size = 100
+        elif self.args.test_set == "RSSCN7":
+            dataset_size=2800
         elif self.args.test_set == "img_test":
             lr_list.append("img_test/LR.png")
             hr_list.append("img_test/HR.png")
             return lr_list, hr_list
-        for i in range(dataset_size):
+        for i in range(int(dataset_size * self.args.test_percent)):
             lr_list.append(os.path.join(self.lr_dir, "{}.png".format(i)))
             hr_list.append(os.path.join(self.hr_dir, "{}.png".format(i)))
 
@@ -48,6 +50,9 @@ class Benchmark(srdata.SRData):
         if self.args.test_set in ["Set5", "Set14", "BSD100", "Urban100"]:
             self.lr_dir = "dataset/{}/x{}/lr".format(self.args.test_set, self.args.scale)
             self.hr_dir = "dataset/{}/x{}/hr".format(self.args.test_set, self.args.scale)
+        elif self.args.test_set == "RSSCN7":
+            self.lr_dir = "dataset/RSSCN7/x{}/lr".format(self.args.scale)
+            self.hr_dir = "dataset/RSSCN7/x{}/hr".format(self.args.scale)
         # if self.args.test_set == "Set5":
         #     self.lr_dir = "dataset/Set5/x{}/lr".format(self.args.scale)
         #     self.hr_dir = "dataset/Set5/x{}/hr".format(self.args.scale)

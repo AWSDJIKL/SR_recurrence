@@ -9,12 +9,12 @@ import argparse
 
 parser = argparse.ArgumentParser(description='Super Resolution framework')
 # dataset setting
-parser.add_argument("--train_set", type=str, default="DIV2K", help="train set name")
-parser.add_argument("--test_set", type=str, default="Set5", help="test set name")
+parser.add_argument("--train_set", type=str, default="AID", help="train set name")
+parser.add_argument("--test_set", type=str, default="RSSCN7", help="test set name")
 parser.add_argument("--scale", type=int, default=4, help="")
 parser.add_argument("--data_type", type=str, default="npy", help="")
 parser.add_argument("--batch_size", type=int, default=4, help="")
-parser.add_argument("--patch_size", type=int, default=768, help="")
+parser.add_argument("--patch_size", type=int, default=384, help="")
 parser.add_argument("--rgb_range", type=int, default=255, help="")
 parser.add_argument("--n_color", type=int, default=3, help="")
 parser.add_argument('--noise', type=str, default='.',
@@ -59,6 +59,8 @@ parser.add_argument("--device", type=str, default="cuda:0",
                     help="use which device to train")
 parser.add_argument("--half_precision", type=lambda x: x.lower() == 'true', default=False,
                     help="use half precision")
+parser.add_argument('--test_percent', type=float, default=0.0036,
+                    help='test image percent, 1 means test all images')
 
 # Optimization setting
 parser.add_argument('--lr', type=float, default=1e-4,

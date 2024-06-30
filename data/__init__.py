@@ -11,7 +11,7 @@ class Data:
         trainset = getattr(module_train, args.train_set)(args)
         self.train_loader = DataLoader(trainset, batch_size=args.batch_size, shuffle=True,num_workers=args.num_workers)
         self.test_loader = None
-        if args.test_set in ['Set5', 'Set14', 'BSD100', 'Urban100']:
+        if args.test_set in ['Set5', 'Set14', 'BSD100', 'Urban100',"RSSCN7"]:
             module_test = import_module('data.benchmark')
             testset = getattr(module_test, 'Benchmark')(args, train=False)
             self.test_loader = DataLoader(testset, batch_size=1, shuffle=False)
