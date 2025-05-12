@@ -17,15 +17,16 @@ import wget
 from PIL import Image
 import imageio
 import tqdm
+import gdown
 
 link_list = {
-    "Set5": "https://uofi.box.com/shared/static/kfahv87nfe8ax910l85dksyl2q212voc.zip",
-    "Set14": "https://uofi.box.com/shared/static/igsnfieh4lz68l926l8xbklwsnnk8we9.zip",
-    "BSD100": "https://uofi.box.com/shared/static/qgctsplb8txrksm9to9x01zfa4m61ngq.zip",
-    "Urban100": "https://uofi.box.com/shared/static/65upg43jjd0a4cwsiqgl6o6ixube6klm.zip",
-    "DIV2K_train_HR": "http://data.vision.ee.ethz.ch/cvl/DIV2K/DIV2K_train_HR.zip",
-    # "Flickr2K": "https://cv.snu.ac.kr/research/EDSR/Flickr2K.tar",
+    "Set5": "https://drive.google.com/uc?id=1RaofSmRlPVM1kueteHdeza0mM_SXS3mJ",
+    "Set14": "https://drive.google.com/uc?id=1vVH7AsDMsLcd4benOo0SifFOc_u3qqFM",
+    "BSD100": "https://drive.google.com/uc?id=17NM79sb-1s1bAi8sqaOH2aNVXHJs0C7d",
+    "Urban100": "https://drive.google.com/uc?id=1LtDOwAkewaTkdVwuzRCeuCwd3mF1xSi-",
 
+    # "DIV2K_train_HR": "http://data.vision.ee.ethz.ch/cvl/DIV2K/DIV2K_train_HR.zip",
+    # "Flickr2K": "https://cv.snu.ac.kr/research/EDSR/Flickr2K.tar",
 
     # "DIV2K_train_LR": "http://data.vision.ee.ethz.ch/cvl/DIV2K/DIV2K_train_LR_bicubic_X4.zip",
     # "DIV2K_valid": "http://data.vision.ee.ethz.ch/cvl/DIV2K/DIV2K_valid_HR.zip",
@@ -109,7 +110,12 @@ def download_datasets(dataset_path):
         if os.path.exists(output_path):
             shutil.rmtree(output_path)
         os.mkdir(output_path)
-        file_name = wget.download(link, output_path, bar=bar_progress)
+        if "google" in link:
+            output_path = os.path.join(output_path, name + ".zip")
+            file_name = gdown.download(url=link, output=output_path, quiet=False, fuzzy=True)
+        else:
+            file_name = wget.download(link, output_path, bar=bar_progress)
+        # file_name = wget.download(link, output_path, bar=bar_progress)
         # file_name = wget.download(link, output_path)
         print(file_name)
         uncompress(file_name)
@@ -185,7 +191,7 @@ def prepare_npy(hr_list, scale, save_path, skip_small=False):
 
 
 if __name__ == '__main__':
-    ssl._create_default_https_context = ssl._create_unverified_context
+    # ssl._create_default_https_context = ssl._create_unverified_context
     print("开始下载数据集")
     dataset_path = "dataset"
     download_datasets(dataset_path)

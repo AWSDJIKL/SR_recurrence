@@ -106,7 +106,11 @@ class SRData(data.Dataset):
             lr = common.add_noise(lr, self.args.noise)
         else:
             # 将hr切割，保证sr图片大小与hr匹配
+            # 要对lr和hr都进行切割，保证能被8整除
             ih, iw = lr.shape[0:2]
+            ih = (ih // self.args.pool_stride) * self.args.pool_stride
+            iw = (iw // self.args.pool_stride) * self.args.pool_stride
+            lr = lr[0:ih, 0:iw]
             hr = hr[0:ih * scale, 0:iw * scale]
         return lr, hr
 

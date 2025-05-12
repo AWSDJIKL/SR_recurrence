@@ -9,27 +9,32 @@ import argparse
 
 parser = argparse.ArgumentParser(description='Super Resolution framework')
 # dataset setting
-parser.add_argument("--train_set", type=str, default="AID", help="train set name")
-parser.add_argument("--test_set", type=str, default="RSSCN7", help="test set name")
+parser.add_argument("--train_set", type=str, default="DIV2K", help="train set name")
+parser.add_argument("--test_set", type=str, default="Set5", help="test set name")
 parser.add_argument("--scale", type=int, default=4, help="")
 parser.add_argument("--data_type", type=str, default="npy", help="")
-parser.add_argument("--batch_size", type=int, default=4, help="")
-parser.add_argument("--patch_size", type=int, default=384, help="")
+parser.add_argument("--batch_size", type=int, default=2, help="")
+parser.add_argument("--patch_size", type=int, default=96, help="")
 parser.add_argument("--rgb_range", type=int, default=255, help="")
 parser.add_argument("--n_color", type=int, default=3, help="")
 parser.add_argument('--noise', type=str, default='.',
                     help='Gaussian noise std.')
 parser.add_argument('--n_colors', type=int, default=3,
                     help='number of color channels to use')
+
+parser.add_argument('--pool_stride', type=int, default=8,
+                    help='number of color channels to use')
+
 # model setting
-parser.add_argument("--model_name", type=str, default="IMDN_plus", help="")
-parser.add_argument("--is_PMG", type=lambda x: x.lower() == 'true', default=True, help="")
-parser.add_argument("--is_crop", type=lambda x: x.lower() == 'true', default=True, help="")
+parser.add_argument("--model_name", type=str, default="HAT", help="")
+parser.add_argument("--is_PMG", type=lambda x: x.lower() == 'true', default=False, help="")
+parser.add_argument("--is_crop", type=lambda x: x.lower() == 'true', default=False, help="")
+parser.add_argument("--ape", type=lambda x: x.lower() == 'true', default=True, help="")
 
 # parser.add_argument("--crop_piece", nargs='+', type=int, default=[16, 6, 1], help="")
 # parser.add_argument("--part", nargs='+', type=int, default=[1, 2, 3], help="")
-parser.add_argument("--crop_piece", nargs='+', type=int, default=[12, 8, 6, 3, 1], help="")
-parser.add_argument("--part", nargs='+', type=int, default=[2, 3, 4, 6, 8], help="")
+parser.add_argument("--crop_piece", nargs='+', type=int, default=[6, 3, 2, 1], help="")
+parser.add_argument("--part", nargs='+', type=int, default=[1, 2, 3, 4], help="")
 # parser.add_argument("--crop_piece", nargs='+', type=int, default=[12, 6, 3, 1], help="")
 # parser.add_argument("--part", nargs='+', type=int, default=[2, 4, 6, 8], help="")
 
@@ -59,13 +64,13 @@ parser.add_argument("--device", type=str, default="cuda:0",
                     help="use which device to train")
 parser.add_argument("--half_precision", type=lambda x: x.lower() == 'true', default=False,
                     help="use half precision")
-parser.add_argument('--test_percent', type=float, default=0.0036,
+parser.add_argument('--test_percent', type=float, default=1,
                     help='test image percent, 1 means test all images')
 
 # Optimization setting
 parser.add_argument('--lr', type=float, default=1e-4,
                     help='learning rate')
-parser.add_argument('--lr_decay', type=int, default=200,
+parser.add_argument('--lr_decay', type=int, default=2000,
                     help='learning rate decay per N epochs')
 parser.add_argument('--decay_type', type=str, default='step',
                     help='learning rate decay type')
@@ -95,4 +100,8 @@ parser.add_argument('--load_checkpoint', type=lambda x: x.lower() == 'true', def
                     help='load checkpoint to continue train')
 parser.add_argument('--save_epoch_result', type=lambda x: x.lower() == 'true', default=False,
                     help='save every epoch sr result ')
+
+# APMG setting
+parser.add_argument("--growth_schedule", nargs='+', type=int, default=[50, 150, 300, 600, 1001], help="")
+
 args = parser.parse_args()

@@ -58,7 +58,7 @@ class MSRN(nn.Module):
         act = nn.ReLU(True)
 
         self.n_blocks = n_blocks
-
+        self.part = args.part
         # RGB mean for DIV2K
         rgb_mean = (0.4488, 0.4371, 0.4040)
         rgb_std = (1.0, 1.0, 1.0)
@@ -74,8 +74,8 @@ class MSRN(nn.Module):
                 MSRB(n_feats=n_feats))
 
         channel_adaptive = [
-            nn.Conv2d(n_feats * ((self.n_blocks // 4) * i + 1), n_feats * (self.n_blocks + 1), 1, padding=0, stride=1)
-            for i in range(1, 4)
+            nn.Conv2d(n_feats * (i + 1), n_feats * (self.n_blocks + 1), 1, padding=0, stride=1)
+            for i in self.part
         ]
         self.channel_adaptive = nn.Sequential(*channel_adaptive)
 
@@ -92,20 +92,17 @@ class MSRN(nn.Module):
         self.body = nn.Sequential(*modules_body)
         self.tail = nn.Sequential(*modules_tail)
 
-    def forward(self, x, step=3):
+    def forward(self, x, step=-1):
         x = self.sub_mean(x)
         x = self.head(x)
         res = x
         MSRB_out = []
-        for i in range(step + 1):
-            x = self.body[2 * i](x)
-            MSRB_out.append(x)
-            x = self.body[2 * i + 1](x)
+        for i in range(self.part[step]):
+            x = self.body[i](x)
             MSRB_out.append(x)
         MSRB_out.append(res)
         res = torch.cat(MSRB_out, 1)
-        if step < 3:
-            res = self.channel_adaptive[step](res)
+        res = self.channel_adaptive[step](res)
         x = self.tail(res)
         x = self.add_mean(x)
         return x

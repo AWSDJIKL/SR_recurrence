@@ -2,34 +2,25 @@
 '''
 
 '''
+import math
 import re
-
+import ssl
 import PIL.Image
 # @Time    : 2021/12/23 10:42
 # @Author  : LINYANZHEN
 # @File    : test.py
-import matplotlib.pyplot as plt
-import numpy as np
-import torchsummary
-import model.MSRN
-from option import args
-import torch
-import torch.nn.functional as F
-import imageio
-from PIL import Image
-import torchvision.transforms
-import pandas as pd
+
+
+import gdown
+import wget
 
 if __name__ == '__main__':
-    print(args.part)
-    # 打开文件并读取每一行
-    with open('checkpoint/x4_IMDN_plus_PMG_1_1_stride1.0/option.txt', 'r') as f:
-        lines = f.readlines()
-    # 创建空字典，并将每一行转换为键值对存入字典
-    args_dict = {}
-    for line in lines:
-        key, value = line.split(' ', 1)
-        args_dict[key] = value
-    args.part = args_dict['part']
-    # args.part = eval(args_dict['part'])
-    print(type(args.part))
+    link = "https://drive.google.com/file/d/1vVH7AsDMsLcd4benOo0SifFOc_u3qqFM/view?usp=drive_link"
+    l = "https://drive.usercontent.google.com/download?id=1vVH7AsDMsLcd4benOo0SifFOc_u3qqFM&authuser=0&confirm=t&uuid=19d41d78-86f3-420d-9069-f8cae7c39d6d&at=ALoNOgnLv1nk2x4vJuNjQfu5K_sT%3A1747058304550"
+    # l="https://drive.usercontent.google.com/download?id=1vVH7AsDMsLcd4benOo0SifFOc_u3qqFM&export=download&authuser=0&confirm=t&uuid=a49ccbeb-e6f8-48a7-898b-5ad1e0f689ba&at=ALoNOgn2OyruE8DtEi5FhT50KoSH%3A1747058606298"
+    ssl._create_default_https_context = ssl._create_unverified_context
+    file_name = gdown.download(link, "dataset/Set14.zip",
+                               quiet=False, fuzzy=True)
+    # file_name = wget.download(link, "dataset")
+    print(file_name)
+    pass

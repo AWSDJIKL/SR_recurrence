@@ -16,6 +16,9 @@ from option import args
 import loss
 import model
 # import PMGTrainer
+import APMGTrainer
+import transformer_trainer
+
 
 def setup_seed(seed):
     torch.manual_seed(seed)
@@ -30,7 +33,11 @@ if __name__ == '__main__':
     setup_seed(args.seed)
     m = model.get_model(args.model_name, args)
     loader = data.Data(args)
+    # print(len(loader.train_loader))
+    # print(len(loader.test_loader))
     loss = loss.Loss(args)
     trainer = Trainer.Trainer(args, m, loader, loss)
+    # trainer = APMGTrainer.Trainer(args, m, loader, loss)
+    # trainer = transformer_trainer.Trainer(args, m, loader, loss)
     while not trainer.is_finsh():
         trainer.train_and_test()

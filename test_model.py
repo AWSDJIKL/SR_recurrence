@@ -30,18 +30,24 @@ def model_test(model, test_loader):
     ssim = 0
     with torch.no_grad():
         model.eval()
+        # i = 0
         for (lr, hr, img_name) in test_loader:
+            # print(img_name)
+            # if i != 5:
+            #     i += 1
+            #     continue
+
             lr = lr.to(device)
-            hr = hr.to(device)
+            # hr = hr.to(device)
             sr = model(lr)
-            sr = utils.quantize(sr, args.rgb_range)
+            sr = utils.quantize(sr, args.rgb_range).to("cpu")
             psnr += utils.calculate_psnr(sr, hr, args.scale, args.rgb_range)
             # ssim += utils.calculate_ssim(sr, hr)
             ssim += SSIM(sr, hr).item()
     psnr /= len(test_loader)
     ssim /= len(test_loader)
     # lpips /= len(test_loader)
-    psnr = round(psnr, 2)
+    psnr = round(psnr, 4)
     ssim = round(ssim, 4)
     return psnr, ssim
 
@@ -65,7 +71,7 @@ def test_bicubic(test_loader, scale=4):
         #     imageio.imsave(os.path.join("img_test/bicubic", "{}.png".format(name)), ndarr)
     psnr /= len(test_loader)
     ssim /= len(test_loader)
-    psnr = round(psnr, 2)
+    psnr = round(psnr, 4)
     ssim = round(ssim, 4)
     return psnr, ssim
 
@@ -75,64 +81,106 @@ if __name__ == '__main__':
         "Set5",
         "Set14",
         "BSD100",
-        "Urban100"
+        "Urban100",
+        # "RSSCN7"
     ]
 
-    # # 各个模型名字与路径名
+    # 各个模型名字与路径名
     # model_list = {
     #     "bicubic": "",
-    #     "x4_SRCNN": "SRCNN",
-    #     "x4_SRCNN_PMG_12_6_1_stride1.0": "SRCNN",
-    #     "x4_ESPCN": "ESPCN",
-    #     "x4_ESPCN_PMG_12_6_1_stride1.0": "ESPCN",
-    #     "x4_EDSR": "EDSR",
-    #     "x4_EDSR_PMG_12_6_3_1_stride1.0": "EDSR",
-    #     "x4_MSRN": "MSRN",
-    #     "x4_MSRN_PMG_12_6_3_1_stride1.0": "MSRN",
-    #     "x4_RFDN": "RFDN",
-    #     "x4_RFDN_PMG_12_6_3_1_stride1.0": "RFDN",
-    #     "x4_VDSR": "VDSR",
-    #     "x4_VDSR_PMG_12_6_1_stride1.0": "VDSR",
-    #     "x4_IMDN_plus": "IMDN_plus",
-    #     "x4_IMDN_plus_PMG_12_8_6_3_1_stride1.0": "IMDN_plus",
+    #     "x4_SRCNN_384": "SRCNN",
+    #     "x4_SRCNN_384_PMG_16_6_1_stride1.0": "SRCNN",
+    #     "x4_ESPCN_384": "ESPCN",
+    #     "x4_ESPCN_384_PMG_16_6_1_stride1.0": "ESPCN",
+    #     "x4_RFDN_384": "RFDN",
+    #     "x4_RFDN_PMG_384_6_4_2_1_stride1.0": "RFDN",
+    #     "x4_IMDN_plus_384": "IMDN_plus",
+    #     "x4_IMDN_plus_384_PMG_16_12_6_3_1_stride1.0": "IMDN_plus",
+    #     "x4_ESRT_384": "ESRT",
+    #     "x4_ESRT_384_PMG_8_1_stride1.0": "ESRT",
+    #     "x4_SwinIR_384": "SwinIR",
+    #     "x4_SwinIR_384_PMG_6_4_2_1_stride1.0": "SwinIR",
+    #     "x4_Swin2SR_384": "Swin2SR",
+    #     "x4_Swin2SR_384_PMG_6_4_2_1_stride1.0": "Swin2SR",
+    #     "x4_HAT_384": "HAT",
+    #     "x4_HAT_384_PMG_6_3_2_1_stride1.0": "HAT",
+    #
+    #     "x4_HAT_ape_96": "HAT",
     # }
 
-    # 分阶段的实验
+    # # 测试不同尺度的输出图片对transformer类模型的影响
+    # model_list = {
+    #     "x4_SwinIR_64": "SwinIR",
+    #     "x4_SwinIR_96": "SwinIR",
+    #     "x4_SwinIR_128": "SwinIR",
+    #     "x4_SwinIR_192": "SwinIR",
+    #     "x4_SwinIR_256": "SwinIR",
+    #     "x4_SwinIR_384": "SwinIR",
+    #     "x4_SwinIR_384_PMG_6_4_2_1_stride1.0": "SwinIR",
+    # }
+
+    # 测试ape的效果
     model_list = {
-        "x4_IMDN_plus": "IMDN_plus",
-        "x4_IMDN_plus_PMG_1_1_stride1.0": "IMDN_plus",
-        "x4_IMDN_plus_PMG_1_1_1_stride1.0": "IMDN_plus",
-        "x4_IMDN_plus_PMG_1_1_1_1_stride1.0": "IMDN_plus",
-        "x4_IMDN_plus_PMG_1_1_1_1_1_stride1.0": "IMDN_plus",
-        "x4_IMDN_plus_PMG_1_1_1_1_1_1_stride1.0": "IMDN_plus",
-        "x4_IMDN_plus_PMG_1_1_1_1_1_1_1_stride1.0": "IMDN_plus",
-        "x4_IMDN_plus_PMG_1_1_1_1_1_1_1_1_stride1.0": "IMDN_plus",
+        "x4_HAT_96": "HAT",
+        "x4_HAT_ape_96": "HAT",
+        "x4_HAT_128": "HAT",
+        "x4_HAT_ape_128": "HAT",
+        "x4_HAT_192": "HAT",
+        "x4_HAT_ape_192": "HAT",
+        "x4_HAT_256": "HAT",
+        "x4_HAT_ape_256": "HAT",
+        "x4_HAT_384": "HAT",
+        "x4_HAT_ape_384": "HAT",
+
+        "x4_SwinIR_96": "SwinIR",
+        "x4_SwinIR_ape_96": "SwinIR",
+        "x4_SwinIR_128": "SwinIR",
+        "x4_SwinIR_ape_128": "SwinIR",
+        "x4_SwinIR_192": "SwinIR",
+        "x4_SwinIR_ape_192": "SwinIR",
+        "x4_SwinIR_256": "SwinIR",
+        "x4_SwinIR_ape_256": "SwinIR",
+        # "x4_SwinIR_384": "SwinIR",
+        # "x4_SwinIR_ape_384": "SwinIR",
     }
+
+    # # 分阶段的实验
+    # model_list = {
+    #     "x4_IMDN_plus": "IMDN_plus",
+    #     "x4_IMDN_plus_PMG_1_1_stride1.0": "IMDN_plus",
+    #     "x4_IMDN_plus_PMG_1_1_1_stride1.0": "IMDN_plus",
+    #     "x4_IMDN_plus_PMG_1_1_1_1_stride1.0": "IMDN_plus",
+    #     "x4_IMDN_plus_PMG_1_1_1_1_1_stride1.0": "IMDN_plus",
+    #     "x4_IMDN_plus_PMG_1_1_1_1_1_1_stride1.0": "IMDN_plus",
+    #     "x4_IMDN_plus_PMG_1_1_1_1_1_1_1_stride1.0": "IMDN_plus",
+    #     "x4_IMDN_plus_PMG_1_1_1_1_1_1_1_1_stride1.0": "IMDN_plus",
+    # }
 
     # # 划分大小的实验
     # model_list = {
     #     "x4_IMDN_plus_PMG_1_1_1_1_1_stride1.0": "IMDN_plus",
-    #     "x4_IMDN_plus_PMG_16_12_6_3_1_stride1.0": "IMDN_plus",
-    #     "x4_IMDN_plus_PMG_12_8_6_3_1_stride1.0": "IMDN_plus",
-    #     "x4_IMDN_plus_PMG_8_6_4_3_1_stride1.0": "IMDN_plus",
-    #     "x4_IMDN_plus_PMG_1_3_4_6_8_stride1.0": "IMDN_plus",
-    #     "x4_IMDN_plus_PMG_1_3_6_8_12_stride1.0": "IMDN_plus",
-    #     "x4_IMDN_plus_PMG_1_3_6_12_16_stride1.0": "IMDN_plus",
+    #     "x4_IMDN_plus_PMG_16_8_3_1_stride1.0": "IMDN_plus",
+    #     "x4_IMDN_plus_PMG_12_6_3_1_stride1.0": "IMDN_plus",
+    #     "x4_IMDN_plus_PMG_8_6_3_1_stride1.0": "IMDN_plus",
+    #     "x4_IMDN_plus_PMG_1_3_8_16_stride1.0": "IMDN_plus",
+    #     "x4_IMDN_plus_PMG_1_3_6_12_stride1.0": "IMDN_plus",
+    #     "x4_IMDN_plus_PMG_1_3_6_8_stride1.0": "IMDN_plus",
     # }
 
     # # stride的实验
     # model_list = {
-    #     "x4_IMDN_plus_PMG_12_8_6_3_1_stride0.5": "IMDN_plus",
-    #     "x4_IMDN_plus_PMG_12_8_6_3_1_stride1.0": "IMDN_plus",
-    #     "x4_IMDN_plus_PMG_12_8_6_3_1_stride1.5": "IMDN_plus",
-    #     "x4_IMDN_plus_PMG_12_8_6_3_1_stride2.0": "IMDN_plus",
-    #     "x4_IMDN_plus_PMG_12_8_6_3_1_stride2.5": "IMDN_plus",
+    #     "x4_IMDN_plus_PMG_16_8_3_1_stride0.5": "IMDN_plus",
+    #     "x4_IMDN_plus_PMG_16_8_3_1_stride1.0": "IMDN_plus",
+    #     "x4_IMDN_plus_PMG_16_8_3_1_stride1.5": "IMDN_plus",
+    #     "x4_IMDN_plus_PMG_16_8_3_1_stride2.0": "IMDN_plus",
+    #     "x4_IMDN_plus_PMG_16_8_3_1_stride2.5": "IMDN_plus",
     # }
 
     # 新建一个dataframe保存每个模型的结果
 
     for scale_factor in [4]:
         args.scale = scale_factor
+        args.test_percent = 1
         print(args.scale)
         df = pd.DataFrame({"model": model_list.keys()})
         for test_set_name in test_set_list:
@@ -143,17 +191,17 @@ if __name__ == '__main__':
             ssim_list = []
             # 逐个导入模型并测试超分辨率结果，保存到文件夹中
             for model_path, model_name in model_list.items():
-                print(model_path)
-                with open('checkpoint/{}/option.txt'.format(model_path), 'r') as f:
-                    lines = f.readlines()
-                args_dict = {}
-                for line in lines:
-                    key, value = line.split(' ', 1)
-                    args_dict[key] = value
-                args.part = eval(args_dict['part'])
                 if model_path == "bicubic":
                     psnr, ssim = test_bicubic(test_loader, scale=scale_factor)
                 else:
+                    with open('checkpoint/{}/option.txt'.format(model_path), 'r') as f:
+                        lines = f.readlines()
+                    args_dict = {}
+                    for line in lines:
+                        key, value = line.split(' ', 1)
+                        args_dict[key] = value
+                    args.part = eval(args_dict['part'])
+                    args.ape = eval(args_dict['ape'])
                     model_path = "checkpoint/{}/model/final.pth".format(model_path)
                     state_dict = torch.load(model_path, map_location="cuda:0")
                     test_model = model.get_model(model_name, args)
@@ -165,7 +213,9 @@ if __name__ == '__main__':
                 ssim_list.append(ssim)
             df.insert(len(df.columns), test_set_name + "_PSNR", psnr_list)
             df.insert(len(df.columns), test_set_name + "_SSIM", ssim_list)
-        df.to_csv("checkpoint/x{}_test_result.csv".format(scale_factor), index=False)
+        # df.to_csv("checkpoint/x{}_test_result.csv".format(scale_factor), index=False)
+        df.to_csv("checkpoint/x{}_ape_result.csv".format(scale_factor), index=False)
+        # df.to_csv("checkpoint/x{}_patch_size_transformer_result.csv".format(scale_factor), index=False)
         # df.to_csv("checkpoint/x{}_stages_test_result.csv".format(scale_factor), index=False)
         # df.to_csv("checkpoint/x{}_crop_size_test_result.csv".format(scale_factor), index=False)
         # df.to_csv("checkpoint/x{}_stride_test_result.csv".format(scale_factor), index=False)

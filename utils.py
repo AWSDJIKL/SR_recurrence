@@ -4,7 +4,7 @@
 '''
 # @Time    : 2021/12/3 11:59
 # @Author  : LINYANZHEN
-# @File    : utils.py
+# @File    : lam_utils.py
 import random
 import shutil
 

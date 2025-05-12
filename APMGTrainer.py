@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 '''
-训练器
+
 '''
-# @Time    : 2021/12/18 15:50
+# @Time    : 2024/8/12 11:53
 # @Author  : LINYANZHEN
-# @File    : Trainer.py
+# @File    : APMGTrainer.py
 import shutil
 from datetime import datetime
 
@@ -29,6 +29,7 @@ class Trainer():
         self.model = model
         self.is_PMG = args.is_PMG
         self.is_crop = args.is_crop
+        self.growth_stage = 0
         self.loss = loss
         # 是否使用半精度
         self.half_precision = args.half_precision
@@ -43,18 +44,12 @@ class Trainer():
         now_time = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
         if self.is_PMG and model.support_PMG:
             crop_piece = "_".join(map(str, args.crop_piece))
-            experiment_name = "x{}_{}{}_{}_PMG_{}_stride{}_seed{}".format(args.scale, model.__class__.__name__,
-                                                                          "_ape" if args.ape else "", args.patch_size,
-                                                                          crop_piece,
-                                                                          args.stride,
-                                                                          args.seed)
+            experiment_name = "x{}_{}_APMG_{}_stride{}".format(args.scale, model.__class__.__name__, crop_piece,
+                                                               args.stride)
         else:
             args.is_PMG = False
             self.is_PMG = False
-            experiment_name = "x{}_{}{}_{}_seed{}".format(args.scale, model.__class__.__name__,
-                                                          "_ape" if args.ape else "",
-                                                          args.patch_size,
-                                                          args.seed)
+            experiment_name = "x{}_{}".format(args.scale, model.__class__.__name__)
         # experiment_name = "{}_x{}_{}".format(now_time, args.scale, model.__class__.__name__)
         self.checkpoint = utils.Checkpoint(args, self.model, experiment_name)
         if args.load_checkpoint:
@@ -68,6 +63,16 @@ class Trainer():
     def train_and_test(self):
         start_time = time.time()
         epoch = self.scheduler.last_epoch + 1
+
+        # 根据epoch判断是否增长网络
+        if self.is_PMG:
+            if epoch == self.args.growth_schedule[self.growth_stage]:
+                self.checkpoint.write_log("网络增长")
+                self.growth_stage += 1
+                self.model.grow()
+                self.optimizer = self.make_optimizer()
+                self.checkpoint.write_log("Growth stage: {}".format(self.growth_stage))
+
         learn_percent = 0.5 + 0.1 * (epoch // 40)
         lr = self.scheduler.get_last_lr()[0]
         self.checkpoint.write_log(
@@ -83,38 +88,23 @@ class Trainer():
             if self.is_PMG:
                 lr_size = self.args.patch_size // self.args.scale
                 hr_size = self.args.patch_size
-                lr_list = []
-                hr_list = []
-                for n in self.args.crop_piece:
-                    if self.is_crop:
-                        if n == 1:
-                            lr_list.append(lr)
-                            hr_list.append(hr)
-                        else:
-                            lr_list.append(utils.crop_img(lr, lr_size, n, self.args.stride))
-                            hr_list.append(
-                                (utils.crop_img(hr, hr_size, n, self.args.stride)))
-                    else:
-                        lr_list.append(lr)
-                        hr_list.append(hr)
-                    # jigsaws_lr, jigsaws_hr = utils.jigsaw_generator(lr, hr, lr_size, hr_size, n)
-                    # lr_list.append(jigsaws_lr)
-                    # hr_list.append(jigsaws_hr)
-                # for i in range(len(lr_list)):
-                #     print("----")
-                #     print(lr_list[i].size())
-                for i in range(len(self.args.crop_piece)):
-                    # print(lr_list[i].device)
-                    # print(next(self.model.parameters()).device)
-                    self.optimizer.zero_grad()
-                    sr = self.model(lr_list[i], i)
-                    # loss = self.loss(sr, hr_list[i], i)
-                    loss = self.loss(sr, hr_list[i])
-                    if i == len(self.args.crop_piece) - 1:
-                        loss = loss * 2
-                    loss.backward()
-                    self.optimizer.step()
-                    epoch_loss += loss.item() / len(self.args.crop_piece)
+                if self.is_crop:
+                    n = self.args.crop_piece[self.growth_stage]
+                    if n > 1:
+                        lr = utils.crop_img(lr, lr_size, n, self.args.stride)
+                        hr = utils.crop_img(hr, hr_size, n, self.args.stride)
+                self.optimizer.zero_grad()
+                sr = self.model(lr)
+                loss = self.loss(sr, hr)
+                loss.backward()
+                self.optimizer.step()
+
+                # 更新动量网络
+                self.model.cpu()
+                self.model.renew_momentum()
+                self.model.to(self.device)
+
+                epoch_loss += loss.item() / len(self.args.crop_piece)
             else:
                 self.optimizer.zero_grad()
                 sr = self.model(lr)
@@ -125,6 +115,8 @@ class Trainer():
                 self.optimizer.step()
                 epoch_loss += loss.item()
         epoch_loss /= len(self.train_loader)
+
+        # 测试
         with torch.no_grad():
             self.model.eval()
             for (lr, hr, img_name) in self.test_loader:
